@@ -16,10 +16,10 @@ import {
 export class APIMiddleware {
   next!: Dispatch<APIAction>;
 
-  refreshActionTypes?: ProgressActionTypes;
+  refreshAction?: Settings["refreshAction"];
 
   constructor(settings?: Settings) {
-    this.refreshActionTypes = settings?.refreshActionTypes;
+    this.refreshAction = settings?.refreshAction;
   }
 
   public middleware = (): Middleware<Dispatch<APIAction>> => {
@@ -49,14 +49,17 @@ export class APIMiddleware {
 
       api.dispatch(APIActions.start(startActionParams));
 
-      const response = await this.fetch(action, abortController);
+      const refreshAction = this.refreshAction?.();
 
-      if (response.status === 401 && this.refreshActionTypes) {
-        // TODO refresh url!
-        if (action.url !== "/api/v1/refresh") {
-          this.refreshToken(api, action);
-        } else {
-          // TODO do smth!!
+      const isRefresh = action.url === refreshAction.url;
+
+      let response = await this.fetch(action, abortController, isRefresh);
+
+      if (response.status === 401 && !isRefresh) {
+        const isSuccess = await this.refreshToken(api, refreshAction);
+
+        if (isSuccess) {
+          response = await this.fetch(action, abortController);
         }
       }
 
@@ -87,10 +90,6 @@ export class APIMiddleware {
       data = await response.json();
     } else if (/text/.test(contentType)) {
       data = await response.text();
-    } else {
-      throw Error(
-        "ReduxAPIMiddlewareError: Response Content-Type is neither json nor text"
-      );
     }
 
     return data;
@@ -143,26 +142,29 @@ export class APIMiddleware {
 
   private async refreshToken(
     api: MiddlewareAPI,
-    action: APIAction
-  ): Promise<APIAction> {
-    // TODO refresh must by client action
-    await api.dispatch({
-      type: REST_API,
-      url: "/api/v1/refresh",
-      method: "post",
-      stageActionTypes: this.refreshActionTypes,
-    });
+    refreshAction: APIAction
+  ): Promise<boolean> {
+    const result = await api.dispatch(refreshAction);
 
-    return api.dispatch(action);
+    // TODO it must be client function
+    if (result?.payload?.body?.token && result?.payload?.body?.refreshToken) {
+      localStorage.setItem("token", result?.payload?.body?.token);
+      localStorage.setItem("refreshToken", result?.payload?.body?.refreshToken);
+
+      return true;
+    }
+
+    // TODO client must do smth if failed
+    return false;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private async fetch(
     action: APIAction,
-    controller: AbortController
+    controller: AbortController,
+    isRefresh?: boolean
   ): Promise<Response> {
-    const token = /refresh$/.test(action.url)
-      ? localStorage.getItem("refresh_token")
+    const token = isRefresh
+      ? localStorage.getItem("refreshToken")
       : localStorage.getItem("token");
 
     const body: string =
@@ -172,7 +174,7 @@ export class APIMiddleware {
 
     const credentials = "same-origin";
 
-    const { headers, method = "get", url } = action;
+    const { headers = {}, method = "get", url } = action;
 
     if (token) {
       headers.Authorization = `Bearer ${token}`;

@@ -8,7 +8,13 @@ import * as actions from "./action";
 
 import * as CONSTANTS from "./constant";
 
-const api = new APIMiddleware();
+const api = new APIMiddleware({
+  refreshAction: actions.refresh,
+});
+
+const headersJson = {
+  "Content-Type": "application/json",
+};
 
 const middlewares = [api.middleware()];
 const mockStore = configureMockStore(middlewares);
@@ -45,6 +51,7 @@ describe("async actions", () => {
       actions.get({
         onSuccess: ({ body }) => {
           expect(body.data).toEqual("test");
+          expect(body.data).toEqual("test");
         },
         onFail: ({ body }) => {
           expect(body.data).toEqual(null);
@@ -55,7 +62,7 @@ describe("async actions", () => {
       })
     );
 
-    expect.assertions(2);
+    expect.assertions(3);
   });
 
   it("onFail when reject", async () => {
@@ -94,6 +101,7 @@ describe("async actions", () => {
       actions.get({
         onFail: ({ requestError, response }) => {
           expect(requestError).toEqual(undefined);
+          expect(requestError).toEqual(undefined);
         },
         onStart: ({ action }) => {
           expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
@@ -104,41 +112,102 @@ describe("async actions", () => {
       })
     );
 
-    expect.assertions(2);
+    expect.assertions(3);
   });
 
-  // it("onFail wrong content-type", async () => {
-  //   const errorMsg = "Server Error";
+  it("onFail wrong content-type", async () => {
+    const errorMsg = "Server Error";
 
-  //   fetchMock.mockResponses([
-  //     errorMsg,
-  //     {
-  //       status: 500,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     },
-  //   ]);
+    fetchMock.mockResponses([
+      errorMsg,
+      {
+        status: 500,
+        headers: headersJson,
+      },
+    ]);
 
-  //   const store = mockStore();
+    const store = mockStore();
 
-  //   await store.dispatch(
-  //     actions.get({
-  //       onFail: ({ requestError, response }) => {
-  //         expect(requestError).toEqual(
-  //           "FetchError: invalid json response body at  reason: Unexpected token S in JSON at position 0"
-  //         );
-  //         expect(response).toEqual(undefined);
-  //       },
-  //       onStart: ({ action }) => {
-  //         expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
-  //       },
-  //       onSuccess: ({ response }) => {
-  //         expect(response).toEqual("I should not be here");
-  //       },
-  //     })
-  //   );
+    await store.dispatch(
+      actions.get({
+        onFail: ({ requestError, response }) => {
+          expect(requestError).toEqual(
+            "FetchError: invalid json response body at  reason: Unexpected token S in JSON at position 0"
+          );
+          expect(response).toEqual(undefined);
+        },
+        onStart: ({ action }) => {
+          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        },
+        onSuccess: ({ response }) => {
+          expect(response).toEqual("I should not be here");
+        },
+      })
+    );
 
-  //   expect.assertions(2);
-  // });
+    expect.assertions(3);
+  });
+
+  it("401 error. refresh token", async () => {
+    fetchMock.mockResponses(
+      [undefined, { status: 401, url: "/getdata" }],
+      [
+        JSON.stringify({ token: "1111111", refreshToken: "7" }),
+        { status: 200, headers: headersJson, url: "/refreshtoken" },
+      ],
+      [
+        JSON.stringify({ data: "test" }),
+        { status: 200, headers: headersJson, url: "/getdata" },
+      ]
+    );
+
+    const store = mockStore();
+
+    await store.dispatch(
+      actions.get({
+        onFail: ({ response }) => {
+          expect(response).toEqual(
+            "I should not be here 401 error. refresh token"
+          );
+        },
+        onStart: ({ action }) => {
+          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        },
+        onSuccess: ({ body }) => {
+          expect(body.data).toEqual("test");
+          expect(body.data).toEqual("test");
+        },
+      })
+    );
+
+    expect.assertions(3);
+  });
+
+  it("401 error. refresh token failed", async () => {
+    fetchMock.mockResponses(
+      [undefined, { status: 401, url: "/getdata" }],
+      [undefined, { status: 401, url: "/refresh" }]
+    );
+
+    const store = mockStore();
+
+    await store.dispatch(
+      actions.get({
+        onFail: ({ requestError, body }) => {
+          expect(requestError).toEqual(undefined);
+          expect(body).toEqual(undefined);
+        },
+        onStart: ({ action }) => {
+          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        },
+        onSuccess: ({ response }) => {
+          expect(response).toEqual(
+            "I should not be here 401 error. refresh token failed"
+          );
+        },
+      })
+    );
+
+    expect.assertions(3);
+  });
 });

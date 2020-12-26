@@ -23,3 +23,12 @@ export const get = (stageAction?: StageFunctions): APIAction => {
     ...stageAction,
   };
 };
+
+export const refresh = (): APIAction => {
+  return {
+    type: REST_API,
+    stageActionTypes: CONSTANTS.REFRESH,
+    url: `/api/refresh/`,
+    method: "post",
+  };
+};

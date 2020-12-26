@@ -4,4 +4,10 @@ const GET = {
   SUCCESS: "GET/TEST/SUCCESS",
 };
 
-export { GET };
+const REFRESH = {
+  START: "REFRESH/TEST/START",
+  FAIL: "REFRESH/TEST/FAIL",
+  SUCCESS: "REFRESH/TEST/SUCCESS",
+};
+
+export { GET, REFRESH };

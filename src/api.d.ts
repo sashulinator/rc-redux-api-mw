@@ -66,5 +66,5 @@ export type ActionOnProgress<
 export type Settings = {
   onRequestAbort?: () => void;
   onResposeHasError?: () => void;
-  refreshActionTypes: ProgressActionTypes;
+  refreshAction: () => APIAction;
 };
