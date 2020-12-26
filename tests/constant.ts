@@ -1,0 +1,7 @@
+const GET = {
+  START: "GET/TEST/START",
+  FAIL: "GET/TEST/FAIL",
+  SUCCESS: "GET/TEST/SUCCESS",
+};
+
+export { GET };

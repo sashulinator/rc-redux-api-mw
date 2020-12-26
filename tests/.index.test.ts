@@ -1,45 +1,144 @@
-import routes from "./mockRoutes";
+import { APIMiddleware } from "../src/api";
 
-test("routes.isCurrent", () => {
-  expect(routes.ABOUT.isCurrent).toBe(false);
+import configureMockStore from "redux-mock-store";
 
-  window.history.pushState({}, "Page Title", routes.ABOUT.PATH);
+import fetchMock from "jest-fetch-mock";
 
-  expect(routes.ABOUT.isCurrent).toBe(true);
-  expect(routes.APP.isCurrent).toBe(false);
-  expect(routes.USERS.isCurrent).toBe(false);
-});
+import * as actions from "./action";
 
-test("routes.isCurrent with param", () => {
-  expect(routes.USER.isCurrent).toBe(false);
+import * as CONSTANTS from "./constant";
 
-  window.history.pushState(
-    {},
-    "Page Title",
-    routes.USER.PATH.replace(":id", "177")
-  );
+const api = new APIMiddleware();
 
-  expect(routes.USER.isCurrent).toBe(true);
+const middlewares = [api.middleware()];
+const mockStore = configureMockStore(middlewares);
 
-  //
+describe("async actions", () => {
+  afterEach(() => {
+    fetchMock.resetMocks();
+  });
 
-  expect(routes.USER_CATS.isCurrent).toBe(false);
+  it("basic", async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  window.history.pushState(
-    {},
-    "Page Title",
-    routes.USER_CATS.PATH.replace(":id", "177")
-  );
+    const store = mockStore();
 
-  expect(routes.USER_CATS.isCurrent).toBe(true);
-});
+    const result = await store.dispatch(actions.get());
 
-test("routes.isPartOf", () => {
-  expect(routes.ABOUT.isPartOf(routes.ABOUT.PATH)).toBe(true);
+    expect(result.payload.body.data).toEqual("test");
+  });
 
-  expect(routes.ABOUT.isPartOf(routes.USERS.PATH)).toBe(false);
+  it("onStart", async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  expect(routes.USERS.isPartOf(routes.USER.PATH)).toBe(true);
+    const store = mockStore();
 
-  expect(routes.USER.isPartOf(routes.USERS.PATH)).toBe(false);
+    await store.dispatch(
+      actions.get({
+        onSuccess: ({ body }) => {
+          expect(body.data).toEqual("test");
+        },
+        onFail: ({ body }) => {
+          expect(body.data).toEqual(null);
+        },
+        onStart: ({ action }) => {
+          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        },
+      })
+    );
+
+    expect.assertions(2);
+  });
+
+  it("onFail when reject", async () => {
+    const errorMsg = "It is normal to see this error message in tests! Go on!";
+
+    fetchMock.mockReject(new Error(errorMsg));
+
+    const store = mockStore();
+
+    await store.dispatch(
+      actions.get({
+        onFail: ({ requestError, response }) => {
+          expect(requestError).toEqual(`Error: ${errorMsg}`);
+          expect(response).toEqual(undefined);
+        },
+        onStart: ({ action }) => {
+          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        },
+        onSuccess: ({ response }) => {
+          expect(response).toEqual("I should not be here");
+        },
+      })
+    );
+
+    expect.assertions(3);
+  });
+
+  it("onFail server error", async () => {
+    const errorMsg = "Server Error";
+
+    fetchMock.mockResponses([errorMsg, { status: 500 }]);
+
+    const store = mockStore();
+
+    await store.dispatch(
+      actions.get({
+        onFail: ({ requestError, response }) => {
+          expect(requestError).toEqual(undefined);
+        },
+        onStart: ({ action }) => {
+          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        },
+        onSuccess: ({ response }) => {
+          expect(response).toEqual("I should not be here");
+        },
+      })
+    );
+
+    expect.assertions(2);
+  });
+
+  // it("onFail wrong content-type", async () => {
+  //   const errorMsg = "Server Error";
+
+  //   fetchMock.mockResponses([
+  //     errorMsg,
+  //     {
+  //       status: 500,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     },
+  //   ]);
+
+  //   const store = mockStore();
+
+  //   await store.dispatch(
+  //     actions.get({
+  //       onFail: ({ requestError, response }) => {
+  //         expect(requestError).toEqual(
+  //           "FetchError: invalid json response body at  reason: Unexpected token S in JSON at position 0"
+  //         );
+  //         expect(response).toEqual(undefined);
+  //       },
+  //       onStart: ({ action }) => {
+  //         expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+  //       },
+  //       onSuccess: ({ response }) => {
+  //         expect(response).toEqual("I should not be here");
+  //       },
+  //     })
+  //   );
+
+  //   expect.assertions(2);
+  // });
 });
