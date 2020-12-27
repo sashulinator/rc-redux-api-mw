@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "rm -rf dist && npm run build",
+    "prepare": "npm run build",
     "test": "jest --coverage"
   },
   "author": "Alexander Savchenko <savchenkoalexander91@gmail.com>",

@@ -7,6 +7,7 @@
         "lib": ["ES2015", "ES7", "ES6", "dom"],
         "outDir": "./dist",
         "target": "es5",
+        "sourceMap": false,
         "moduleResolution": "node"
     },
     "typedocOptions": {
