@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/rc-redux-api-mw"
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types.d.ts",
   "files": [
     "/dist"
   ],

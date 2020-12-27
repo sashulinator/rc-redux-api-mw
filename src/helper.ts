@@ -1,6 +1,6 @@
 import { MiddlewareAPI } from "redux";
 
-import { APIAction, FailActionParams } from "./type.d";
+import { APIAction, FailActionParams } from "./type";
 
 type StageFunctionName = "onSuccess" | "onFail" | "onStart";
 

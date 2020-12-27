@@ -11,7 +11,7 @@ import {
   FakeAbortController,
 } from "./helper";
 
-import { APIAction, Settings, StageAction } from "./type.d";
+import { APIAction, Settings, StageAction } from "./type";
 
 export class APIMiddleware {
   refreshAction?: Settings["refreshAction"];

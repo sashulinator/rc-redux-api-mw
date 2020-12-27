@@ -1,6 +1,6 @@
 import * as CONSTANTS from "./constant";
 
-import { APIAction, OnStart, OnFail, OnSuccess } from "../src/type.d";
+import { APIAction, OnStart, OnFail, OnSuccess } from "../src/type";
 
 import { REST_API } from "../src/constant";
 

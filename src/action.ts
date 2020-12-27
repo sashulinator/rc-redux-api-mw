@@ -5,7 +5,7 @@ import {
   StartAction,
   SuccessAction,
   SuccessActionParams,
-} from "./type.d";
+} from "./type";
 
 export const start = (payload: StartActionParams): StartAction => {
   return {
