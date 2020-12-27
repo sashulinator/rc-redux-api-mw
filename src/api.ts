@@ -1,5 +1,7 @@
 import { Middleware, Dispatch, MiddlewareAPI } from "redux";
 
+import * as APIActions from "./action";
+
 import { REST_API } from "./constant";
 
 import {
@@ -9,13 +11,9 @@ import {
   FakeAbortController,
 } from "./helper";
 
-import * as APIActions from "./action";
-
-import { APIAction, ActionOnProgress, Settings } from "./api.d";
+import { APIAction, Settings, StageAction } from "./type.d";
 
 export class APIMiddleware {
-  next!: Dispatch<APIAction>;
-
   refreshAction?: Settings["refreshAction"];
 
   constructor(settings?: Settings) {
@@ -25,7 +23,7 @@ export class APIMiddleware {
   public middleware = (): Middleware<Dispatch<APIAction>> => {
     return (api) => (next) => async (
       action: APIAction
-    ): Promise<APIAction | ActionOnProgress> => {
+    ): Promise<APIAction | StageAction> => {
       if (action.type !== REST_API) {
         return next(action);
       }
@@ -39,7 +37,7 @@ export class APIMiddleware {
   private async request(
     action: APIAction,
     api: MiddlewareAPI
-  ): Promise<ActionOnProgress> {
+  ): Promise<StageAction> {
     const abortController = new AbortController();
 
     const startActionParams = { action, abortController };
@@ -114,7 +112,7 @@ export class APIMiddleware {
   private async mockRequest(
     action: APIAction,
     api: MiddlewareAPI
-  ): Promise<ActionOnProgress> {
+  ): Promise<StageAction> {
     const abortController = new FakeAbortController();
 
     const startActionParams = { action, abortController };
