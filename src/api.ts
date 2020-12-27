@@ -3,6 +3,7 @@ import { Middleware, Dispatch, MiddlewareAPI } from "redux";
 import { REST_API } from "./constant";
 
 import {
+  buildRequest,
   emitStageFunction,
   getResponseBody,
   FakeAbortController,
@@ -95,36 +96,15 @@ export class APIMiddleware {
 
     const isRefresh = action.url === refreshAction.url;
 
-    const token = isRefresh
-      ? localStorage.getItem("refreshToken")
-      : localStorage.getItem("token");
+    const request = buildRequest(action, api, abortController, isRefresh);
 
-    const body: string =
-      typeof action.body !== "string"
-        ? JSON.stringify(action.body)
-        : action.body;
-
-    const credentials = "same-origin";
-
-    const { headers = {}, method = "get", url } = action;
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    let response = await fetch(url, {
-      signal: abortController.signal,
-      method,
-      credentials,
-      headers,
-      body,
-    });
+    let response = await fetch(request);
 
     if (response.status === 401 && !isRefresh) {
       const isSuccess = await this.refreshToken(api, refreshAction);
 
       if (isSuccess) {
-        response = await this.fetch(api, action, abortController);
+        response = await fetch(request);
       }
     }
 

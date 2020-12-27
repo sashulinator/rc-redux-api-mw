@@ -1,3 +1,5 @@
+import { MiddlewareAPI } from "redux";
+
 import { APIAction } from "./api.d";
 
 import { FailActionParams } from "./action";
@@ -47,6 +49,38 @@ export async function getResponseBody(
   } else {
     return response.body;
   }
+}
+
+export function buildRequest(
+  action: APIAction,
+  api: MiddlewareAPI,
+  abortController: AbortController,
+  isRefresh: boolean
+): Request {
+  const token = isRefresh
+    ? localStorage.getItem("refreshToken")
+    : localStorage.getItem("token");
+
+  const body: string =
+    typeof action.body !== "string" ? JSON.stringify(action.body) : action.body;
+
+  const credentials = "same-origin";
+
+  const { headers = {}, method = "get", url } = action;
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const request = new Request(url, {
+    signal: abortController.signal,
+    method,
+    credentials,
+    headers,
+    body,
+  });
+
+  return request;
 }
 
 export class FakeAbortController implements AbortController {

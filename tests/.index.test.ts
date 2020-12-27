@@ -195,7 +195,7 @@ describe("async actions", () => {
       actions.get({
         onFail: ({ requestError, body }) => {
           expect(requestError).toEqual(undefined);
-          expect(body).toEqual(undefined);
+          expect(body).toEqual(null);
         },
         onStart: ({ action }) => {
           expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
