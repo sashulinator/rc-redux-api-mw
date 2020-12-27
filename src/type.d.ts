@@ -23,7 +23,7 @@ export type APIAction<RequestBody = unknown, ResponseBody = unknown> = {
   onSuccess?: OnSuccess<ResponseBody>;
   onFail?: OnFail<ResponseBody>;
   payload?: any;
-  responseBodyType: ResponseBodyType;
+  responseBodyType?: ResponseBodyType;
   stageActionTypes: StageActionTypes;
 };
 
