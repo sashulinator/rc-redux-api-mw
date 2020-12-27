@@ -1,4 +1,4 @@
-import { MiddlewareAPI } from "redux";
+import { APIMiddleware } from "./api";
 
 import { APIAction, FailActionParams } from "./type";
 
@@ -50,8 +50,8 @@ export async function getResponseBody(
 }
 
 export function buildRequest(
+  apiMiddleware: APIMiddleware,
   action: APIAction,
-  api: MiddlewareAPI,
   abortController: AbortController,
   isRefresh: boolean
 ): Request {
@@ -64,7 +64,7 @@ export function buildRequest(
 
   const credentials = "same-origin";
 
-  const { headers = {}, method = "get", url } = action;
+  const { headers = apiMiddleware.headers || {}, method = "get", url } = action;
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;

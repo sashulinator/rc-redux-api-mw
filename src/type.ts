@@ -72,5 +72,6 @@ export type FailAction<Body = unknown> = {
 };
 
 export type Settings = {
-  refreshAction: () => APIAction;
+  refreshAction?: () => APIAction;
+  headers?: Record<string, string>;
 };

@@ -16,8 +16,11 @@ import { APIAction, Settings, StageAction } from "./type";
 export class APIMiddleware {
   refreshAction?: Settings["refreshAction"];
 
+  headers?: Settings["headers"];
+
   constructor(settings?: Settings) {
     this.refreshAction = settings?.refreshAction;
+    this.headers = settings?.headers;
   }
 
   public middleware = (): Middleware<Dispatch<APIAction>> => {
@@ -92,9 +95,9 @@ export class APIMiddleware {
   ): Promise<Response> {
     const refreshAction = this.refreshAction?.();
 
-    const isRefresh = action.url === refreshAction.url;
+    const isRefresh = refreshAction && action.url === refreshAction.url;
 
-    const request = buildRequest(action, api, abortController, isRefresh);
+    const request = buildRequest(this, action, abortController, isRefresh);
 
     let response = await fetch(request);
 

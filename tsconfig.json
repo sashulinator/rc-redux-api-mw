@@ -6,7 +6,7 @@
         "noImplicitAny": true,
         "lib": ["ES2015", "ES7", "ES6", "dom"],
         "outDir": "./dist",
-        "target": "es5",
+        "target": "ES2019",
         "sourceMap": false,
         "moduleResolution": "node"
     },
