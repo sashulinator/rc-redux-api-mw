@@ -16,6 +16,14 @@ export type Action<P = any> = {
   payload: P;
 };
 
+export type ResponseBodyType =
+  | "json"
+  | "text"
+  | "formData"
+  | "blob"
+  | "arrayBuffer"
+  | "readableStream";
+
 export type APIAction<
   Body = unknown,
   Query = Record<string, number | string>
@@ -38,6 +46,7 @@ export type APIAction<
   query?: Query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: any;
+  responseBodyType: ResponseBodyType;
 };
 
 export type OnStart<Body = unknown> = (params: StartActionParams<Body>) => void;

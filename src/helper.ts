@@ -1,3 +1,5 @@
+import { APIAction } from "./api.d";
+
 import { FailActionParams } from "./action";
 
 type StageFunctionName = "onSuccess" | "onFail" | "onStart";
@@ -21,6 +23,29 @@ export function emitStageFunction(actionParams: FailActionParams) {
     action[stageFunctionName]?.(actionParams as Required<FailActionParams>);
   } catch (e) {
     console.error(`ReduxAPIMiddleware${stageFunctionName}FunctionError: ${e}`);
+  }
+}
+
+export async function getResponseBody(
+  action: APIAction,
+  response: Response
+): Promise<any> {
+  const contentType = response.headers.get("Content-Type");
+
+  if (action.responseBodyType === "readableStream") {
+    return response.body;
+  } else if (action.responseBodyType) {
+    return await response[action.responseBodyType]();
+  }
+
+  if (/json/.test(contentType)) {
+    return await response.json();
+  } else if (/text/.test(contentType)) {
+    return await response.text();
+  } else if (/form-data/.test(contentType)) {
+    return await response.formData();
+  } else {
+    return response.body;
   }
 }
 
