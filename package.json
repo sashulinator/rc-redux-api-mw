@@ -1,6 +1,6 @@
 {
   "name": "@savchenko91/rc-redux-api-mw",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Redux API middleware",
   "main": "./dist",
   "publishConfig": {
