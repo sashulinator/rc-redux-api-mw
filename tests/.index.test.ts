@@ -2,7 +2,9 @@ import { APIMiddleware } from "../src/api";
 
 import configureMockStore from "redux-mock-store";
 
-import fetchMock from "jest-fetch-mock";
+import jestFetchMock from "jest-fetch-mock";
+
+import * as fetchMock from "fetch-mock";
 
 import * as actions from "./action";
 
@@ -21,11 +23,11 @@ const mockStore = configureMockStore(middlewares);
 
 describe("async actions", () => {
   afterEach(() => {
-    fetchMock.resetMocks();
+    jestFetchMock.resetMocks();
   });
 
   it("basic", async () => {
-    fetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
+    jestFetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -39,7 +41,7 @@ describe("async actions", () => {
   });
 
   it("onStart", async () => {
-    fetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
+    jestFetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -68,7 +70,7 @@ describe("async actions", () => {
   it("onFail when reject", async () => {
     const errorMsg = "It is normal to see this error message in tests! Go on!";
 
-    fetchMock.mockReject(new Error(errorMsg));
+    jestFetchMock.mockReject(new Error(errorMsg));
 
     const store = mockStore();
 
@@ -93,7 +95,7 @@ describe("async actions", () => {
   it("onFail server error", async () => {
     const errorMsg = "Server Error";
 
-    fetchMock.mockResponses([errorMsg, { status: 500 }]);
+    jestFetchMock.mockResponses([errorMsg, { status: 500 }]);
 
     const store = mockStore();
 
@@ -118,7 +120,7 @@ describe("async actions", () => {
   it("onFail wrong content-type", async () => {
     const errorMsg = "Server Error";
 
-    fetchMock.mockResponses([
+    jestFetchMock.mockResponses([
       errorMsg,
       {
         status: 500,
@@ -149,16 +151,13 @@ describe("async actions", () => {
   });
 
   it("401 error. refresh token", async () => {
-    fetchMock.mockResponses(
+    jestFetchMock.mockResponses(
       [undefined, { status: 401, url: "/getdata" }],
       [
         JSON.stringify({ token: "1111111", refreshToken: "7" }),
-        { status: 200, headers: headersJson, url: "/refreshtoken" },
+        { status: 200, headers: headersJson },
       ],
-      [
-        JSON.stringify({ data: "test" }),
-        { status: 200, headers: headersJson, url: "/getdata" },
-      ]
+      [JSON.stringify({ data: "test" }), { status: 200, headers: headersJson }]
     );
 
     const store = mockStore();
@@ -173,7 +172,9 @@ describe("async actions", () => {
         onStart: ({ action }) => {
           expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
         },
-        onSuccess: ({ body }) => {
+        onSuccess: ({ body, response }) => {
+          console.log(response);
+
           expect(body.data).toEqual("test");
           expect(body.data).toEqual("test");
         },
@@ -184,16 +185,20 @@ describe("async actions", () => {
   });
 
   it("401 error. refresh token failed", async () => {
-    fetchMock.mockResponses(
-      [undefined, { status: 401, url: "/getdata" }],
-      [undefined, { status: 401, url: "/refresh" }]
-    );
+    fetchMock.mock("/api/test/", 401);
+
+    // (
+    //   [undefined, { status: 401, url: "/getdata" }],
+    //   [undefined, { status: 401, url: "/refresh" }]
+    // );
 
     const store = mockStore();
 
     await store.dispatch(
       actions.get({
-        onFail: ({ requestError, body }) => {
+        onFail: ({ requestError, body, response }) => {
+          console.log(response);
+
           expect(requestError).toEqual(undefined);
           expect(body).toEqual(null);
         },

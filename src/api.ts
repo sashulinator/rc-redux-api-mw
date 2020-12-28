@@ -58,7 +58,9 @@ export class APIMiddleware {
 
       emitStageFunction(endActionParams);
 
-      return api.dispatch(APIActions.success(endActionParams));
+      return api.dispatch(
+        APIActions[response.ok ? "success" : "fail"](endActionParams)
+      );
     } catch (e) {
       const requestError = e.toString();
 
