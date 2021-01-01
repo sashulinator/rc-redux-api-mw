@@ -31,8 +31,6 @@ export class APIMiddleware {
         return next(action);
       }
 
-      if (action.mockBody) return this.mockRequest(action, api);
-
       return this.request(action, api);
     };
   };
@@ -112,50 +110,5 @@ export class APIMiddleware {
     }
 
     return response;
-  }
-
-  private async mockRequest(
-    action: APIAction,
-    api: MiddlewareAPI
-  ): Promise<StageAction> {
-    const abortController = new FakeAbortController();
-
-    const startActionParams = { action, abortController };
-
-    try {
-      emitStageFunction(startActionParams);
-
-      api.dispatch(APIActions.start(startActionParams));
-
-      // TODO ms must be set by user
-      console.warn(
-        `Fake request was send! Wait for ${1000}ms to get fake data!`
-      );
-
-      const response = await new Promise((resolve) => {
-        setTimeout(
-          () => resolve({ status: 200, ok: true, body: action.mockBody }),
-          1000
-        );
-      });
-
-      const endActionParams = {
-        body: action.mockBody,
-        response: response as Response,
-        ...startActionParams,
-      };
-
-      emitStageFunction(endActionParams);
-
-      return api.dispatch(APIActions.success(endActionParams));
-    } catch (e) {
-      const requestError = e.toString();
-
-      const FailActionParams = { abortController, action, requestError };
-
-      emitStageFunction(FailActionParams);
-
-      return api.dispatch(APIActions.fail(FailActionParams));
-    }
   }
 }

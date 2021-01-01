@@ -9,210 +9,79 @@ import * as fetchMock from "fetch-mock";
 import * as actions from "./action";
 
 import * as CONSTANTS from "./constant";
+import { SuccessActionParams } from "../src/type";
 
 const api = new APIMiddleware({
   refreshAction: actions.refresh,
 });
 
+const middlewares = [api.middleware()];
+
+const mockStore = configureMockStore(middlewares);
+
+// Data
+
+const mockDataObj = JSON.stringify({
+  test: "test",
+});
+
+const mockDataJson = JSON.stringify(mockDataObj);
+
+const mockDataString = "test";
+
+//  Headers
+
 const headersJson = {
-  "Content-Type": "application/json",
+  headers: {
+    "Content-Type": "application/json",
+  },
 };
 
-const middlewares = [api.middleware()];
-const mockStore = configureMockStore(middlewares);
+// Tests
 
 describe("async actions", () => {
   afterEach(() => {
     jestFetchMock.resetMocks();
   });
 
-  it("basic", async () => {
-    jestFetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const store = mockStore();
-
-    const result = await store.dispatch(actions.get());
-
-    expect(result.payload.body.data).toEqual("test");
-  });
-
-  it("onStart", async () => {
-    jestFetchMock.mockResponseOnce(JSON.stringify({ data: "test" }), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  it("basic", async (done) => {
+    jestFetchMock.mockResponseOnce(mockDataJson, headersJson);
 
     const store = mockStore();
 
     await store.dispatch(
       actions.get({
-        onSuccess: ({ body }) => {
-          expect(body.data).toEqual("test");
-          expect(body.data).toEqual("test");
-        },
-        onFail: ({ body }) => {
-          expect(body.data).toEqual(null);
-        },
-        onStart: ({ action }) => {
-          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
-        },
-      })
-    );
+        onStart(payload) {
+          const { action, abortController } = payload;
+          const { onStart, onFail, onSuccess } = action;
 
-    expect.assertions(3);
-  });
+          expect((payload as any).response).toEqual(undefined);
+          expect((payload as any).body).toEqual(undefined);
 
-  it("onFail when reject", async () => {
-    const errorMsg = "It is normal to see this error message in tests! Go on!";
+          expect(abortController instanceof AbortController).toBeTruthy();
 
-    jestFetchMock.mockReject(new Error(errorMsg));
-
-    const store = mockStore();
-
-    await store.dispatch(
-      actions.get({
-        onFail: ({ requestError, response }) => {
-          expect(requestError).toEqual(`Error: ${errorMsg}`);
-          expect(response).toEqual(undefined);
+          expect(action).toEqual(actions.get({ onStart, onFail, onSuccess }));
         },
-        onStart: ({ action }) => {
-          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
+        onFail() {
+          done('Error: only "onSuccess" must be emited!');
         },
-        onSuccess: ({ response }) => {
-          expect(response).toEqual("I should not be here");
+        onSuccess: async (payload) => {
+          const { action, abortController, body, response } = payload;
+          const { onStart, onFail, onSuccess } = action;
+
+          expect(body).toEqual(mockDataObj);
+
+          const equalResponse = new Response(mockDataJson, headersJson);
+          await equalResponse.json();
+          expect(response).toEqual(equalResponse);
+
+          expect(abortController instanceof AbortController).toBeTruthy();
+
+          expect(action).toEqual(actions.get({ onStart, onFail, onSuccess }));
+
+          done();
         },
       })
     );
-
-    expect.assertions(3);
-  });
-
-  it("onFail server error", async () => {
-    const errorMsg = "Server Error";
-
-    jestFetchMock.mockResponses([errorMsg, { status: 500 }]);
-
-    const store = mockStore();
-
-    await store.dispatch(
-      actions.get({
-        onFail: ({ requestError, response }) => {
-          expect(requestError).toEqual(undefined);
-          expect(requestError).toEqual(undefined);
-        },
-        onStart: ({ action }) => {
-          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
-        },
-        onSuccess: ({ response }) => {
-          expect(response).toEqual("I should not be here");
-        },
-      })
-    );
-
-    expect.assertions(3);
-  });
-
-  it("onFail wrong content-type", async () => {
-    const errorMsg = "Server Error";
-
-    jestFetchMock.mockResponses([
-      errorMsg,
-      {
-        status: 500,
-        headers: headersJson,
-      },
-    ]);
-
-    const store = mockStore();
-
-    await store.dispatch(
-      actions.get({
-        onFail: ({ requestError, response }) => {
-          expect(requestError).toEqual(
-            "FetchError: invalid json response body at  reason: Unexpected token S in JSON at position 0"
-          );
-          expect(response).toEqual(undefined);
-        },
-        onStart: ({ action }) => {
-          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
-        },
-        onSuccess: ({ response }) => {
-          expect(response).toEqual("I should not be here");
-        },
-      })
-    );
-
-    expect.assertions(3);
-  });
-
-  it("401 error. refresh token", async () => {
-    jestFetchMock.mockResponses(
-      [undefined, { status: 401, url: "/getdata" }],
-      [
-        JSON.stringify({ token: "1111111", refreshToken: "7" }),
-        { status: 200, headers: headersJson },
-      ],
-      [JSON.stringify({ data: "test" }), { status: 200, headers: headersJson }]
-    );
-
-    const store = mockStore();
-
-    await store.dispatch(
-      actions.get({
-        onFail: ({ response }) => {
-          expect(response).toEqual(
-            "I should not be here 401 error. refresh token"
-          );
-        },
-        onStart: ({ action }) => {
-          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
-        },
-        onSuccess: ({ body, response }) => {
-          console.log(response);
-
-          expect(body.data).toEqual("test");
-          expect(body.data).toEqual("test");
-        },
-      })
-    );
-
-    expect.assertions(3);
-  });
-
-  it("401 error. refresh token failed", async () => {
-    fetchMock.mock("/api/test/", 401);
-
-    // (
-    //   [undefined, { status: 401, url: "/getdata" }],
-    //   [undefined, { status: 401, url: "/refresh" }]
-    // );
-
-    const store = mockStore();
-
-    await store.dispatch(
-      actions.get({
-        onFail: ({ requestError, body, response }) => {
-          console.log(response);
-
-          expect(requestError).toEqual(undefined);
-          expect(body).toEqual(null);
-        },
-        onStart: ({ action }) => {
-          expect(action.stageActionTypes).toEqual(CONSTANTS.GET);
-        },
-        onSuccess: ({ response }) => {
-          expect(response).toEqual(
-            "I should not be here 401 error. refresh token failed"
-          );
-        },
-      })
-    );
-
-    expect.assertions(3);
   });
 });
