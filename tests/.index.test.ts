@@ -11,13 +11,7 @@ import * as actions from "./action";
 import * as CONSTANTS from "./constant";
 import { SuccessActionParams } from "../src/type";
 
-const api = new APIMiddleware({
-  refreshAction: actions.refresh,
-});
-
-const middlewares = [api.middleware()];
-
-const mockStore = configureMockStore(middlewares);
+localStorage.setItem("token", "pPOiItf7tyd65xiFg8vuIc81c6c61O3g9");
 
 // Data
 
@@ -45,6 +39,14 @@ describe("async actions", () => {
   });
 
   it("basic", async (done) => {
+    const api = new APIMiddleware({
+      refreshAction: actions.refresh,
+    });
+
+    const middlewares = [api.middleware()];
+
+    const mockStore = configureMockStore(middlewares);
+
     jestFetchMock.mockResponseOnce(mockDataJson, headersJson);
 
     const store = mockStore();
@@ -80,6 +82,40 @@ describe("async actions", () => {
           expect(action).toEqual(actions.get({ onStart, onFail, onSuccess }));
 
           done();
+        },
+      })
+    );
+  });
+
+  it("headers", async (done) => {
+    const api = new APIMiddleware({
+      refreshAction: actions.refresh,
+      headers: ({ action }) => {
+        return new Headers({
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        });
+      },
+    });
+
+    const middlewares = [api.middleware()];
+
+    const mockStore = configureMockStore(middlewares);
+
+    jestFetchMock.mockResponseOnce(mockDataJson, headersJson);
+
+    const store = mockStore();
+
+    await store.dispatch(
+      actions.get({
+        onStart(payload) {
+          //
+        },
+        onFail() {
+          // done('Error: only "onSuccess" must be emited!');
+        },
+        onSuccess: async (payload) => {
+          //
         },
       })
     );

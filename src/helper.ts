@@ -1,6 +1,4 @@
-import { APIMiddleware } from "./api";
-
-import { APIAction, FailActionParams } from "./type";
+import { APIAction, FailActionParams, StartActionParams } from "./type";
 
 type StageFunctionName = "onSuccess" | "onFail" | "onStart";
 
@@ -49,26 +47,20 @@ export async function getResponseBody(
   }
 }
 
-export function buildRequest(
-  apiMiddleware: APIMiddleware,
-  action: APIAction,
-  abortController: AbortController,
-  isRefresh: boolean
-): Request {
-  const token = isRefresh
-    ? localStorage.getItem("refreshToken")
-    : localStorage.getItem("token");
+export function buildRequest(params: StartActionParams): Request {
+  const { action, abortController } = params;
+  // const token = isRefresh
+  //   ? localStorage.getItem("refreshToken")
+  //   : localStorage.getItem("token");
 
   const body: string =
     typeof action.body !== "string" ? JSON.stringify(action.body) : action.body;
 
   const credentials = "same-origin";
 
-  const { headers = apiMiddleware.headers || {}, method = "get", url } = action;
+  const { method = "get", url } = action;
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+  const headers = buildHeaders(params);
 
   const request = new Request(url, {
     signal: abortController.signal,
@@ -81,10 +73,14 @@ export function buildRequest(
   return request;
 }
 
-export class FakeAbortController implements AbortController {
-  signal: null;
+function buildHeaders(params: StartActionParams): Headers {
+  const { action, api } = params;
 
-  abort() {
-    throw Error("Request aborted by user");
-  }
+  const currentHeaders =
+    action.headers?.(params) || api.headers?.(params) || {};
+
+  if (currentHeaders instanceof Headers) return currentHeaders;
+
+  // use destructuring to avoit typescript error "wrong index signature"
+  return new Headers({ ...currentHeaders });
 }

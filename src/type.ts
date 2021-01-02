@@ -1,3 +1,6 @@
+import { MiddlewareAPI } from "redux";
+import { APIMiddleware } from "./api";
+
 export type StageActionTypes = {
   START: string;
   FAIL: string;
@@ -12,19 +15,26 @@ export type ResponseBodyType =
   | "arrayBuffer"
   | "readableStream";
 
-export type APIAction<RequestBody = unknown, ResponseBody = unknown> = {
+export type APIAction<
+  RequestBody = unknown,
+  ResponseBody = unknown
+> = RequestInit & {
   url: string;
-  method?: string;
   type: string;
+  headers?: APIHeaders;
   body?: RequestBody;
-  headers?: { [key: string]: string };
   mockBody?: any;
+
+  responseBodyType?: ResponseBodyType;
+  stageActionTypes: StageActionTypes;
+  /*
+  put any data you want to receive in your reducer
+  */
+  payload?: any;
+
   onStart?: OnStart<ResponseBody>;
   onSuccess?: OnSuccess<ResponseBody>;
   onFail?: OnFail<ResponseBody>;
-  payload?: any;
-  responseBodyType?: ResponseBodyType;
-  stageActionTypes: StageActionTypes;
 };
 
 export type OnStart<Body = unknown> = (params: StartActionParams<Body>) => void;
@@ -46,6 +56,8 @@ export type StageAction<ResponseBody = unknown, RequestBody = unknown> = {
 export type StartActionParams<Body = unknown> = {
   abortController: AbortController;
   action: APIAction<Body>;
+  api: APIMiddleware;
+  store: MiddlewareAPI;
 };
 
 export type StartAction<Body = unknown> = {
@@ -55,7 +67,10 @@ export type StartAction<Body = unknown> = {
 
 export type SuccessActionParams<Body = unknown> = StartActionParams & {
   body: Body;
+  request: Request;
   response: Response;
+  api: APIMiddleware;
+  store: MiddlewareAPI;
 };
 
 export type SuccessAction<Body = unknown> = {
@@ -64,14 +79,22 @@ export type SuccessAction<Body = unknown> = {
 };
 
 export type FailActionParams<Body = unknown> = StartActionParams &
-  Partial<SuccessActionParams<Body>> & { requestError?: string };
+  Partial<SuccessActionParams<Body>> & {
+    requestError?: string;
+    api: APIMiddleware;
+    store: MiddlewareAPI;
+  };
 
 export type FailAction<Body = unknown> = {
   type: string;
   payload: FailActionParams<Body>;
 };
 
+type HeadersFormat = Headers | HeadersInit;
+
+type APIHeaders = (params: StartActionParams) => APIHeaders | HeadersFormat;
+
 export type Settings = {
   refreshAction?: () => APIAction;
-  headers?: Record<string, string>;
+  headers?: APIHeaders;
 };

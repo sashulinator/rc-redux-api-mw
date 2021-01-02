@@ -4,14 +4,9 @@ import * as APIActions from "./action";
 
 import { REST_API } from "./constant";
 
-import {
-  buildRequest,
-  emitStageFunction,
-  getResponseBody,
-  FakeAbortController,
-} from "./helper";
+import { buildRequest, emitStageFunction, getResponseBody } from "./helper";
 
-import { APIAction, Settings, StageAction } from "./type";
+import { APIAction, Settings, StageAction, StartActionParams } from "./type";
 
 export class APIMiddleware {
   refreshAction?: Settings["refreshAction"];
@@ -37,26 +32,26 @@ export class APIMiddleware {
 
   private async request(
     action: APIAction,
-    api: MiddlewareAPI
+    store: MiddlewareAPI
   ): Promise<StageAction> {
     const abortController = new AbortController();
 
-    const startActionParams = { action, abortController };
+    const startActionParams = { action, abortController, store, api: this };
 
     try {
       emitStageFunction(startActionParams);
 
-      api.dispatch(APIActions.start(startActionParams));
+      store.dispatch(APIActions.start(startActionParams));
 
-      const response = await this.fetch(api, action, abortController);
+      const [request, response] = await this.fetch(startActionParams);
 
       const body = await getResponseBody(action, response);
 
-      const endActionParams = { body, response, ...startActionParams };
+      const endActionParams = { body, request, response, ...startActionParams };
 
       emitStageFunction(endActionParams);
 
-      return api.dispatch(
+      return store.dispatch(
         APIActions[response.ok ? "success" : "fail"](endActionParams)
       );
     } catch (e) {
@@ -66,49 +61,45 @@ export class APIMiddleware {
 
       emitStageFunction(failActionParams);
 
-      return api.dispatch(APIActions.fail(failActionParams));
+      return store.dispatch(APIActions.fail(failActionParams));
     }
   }
 
-  private async refreshToken(
-    api: MiddlewareAPI,
-    refreshAction: APIAction
-  ): Promise<boolean> {
-    const result = await api.dispatch(refreshAction);
+  // private async refreshToken(
+  //   api: MiddlewareAPI,
+  //   refreshAction: APIAction
+  // ): Promise<boolean> {
+  //   const result = await api.dispatch(refreshAction);
 
-    // TODO it must be client function
-    if (result?.payload?.body?.token && result?.payload?.body?.refreshToken) {
-      localStorage.setItem("token", result?.payload?.body?.token);
-      localStorage.setItem("refreshToken", result?.payload?.body?.refreshToken);
+  //   // TODO it must be client function
+  //   if (result?.payload?.body?.token && result?.payload?.body?.refreshToken) {
+  //     localStorage.setItem("token", result?.payload?.body?.token);
+  //     localStorage.setItem("refreshToken", result?.payload?.body?.refreshToken);
 
-      return true;
-    }
+  //     return true;
+  //   }
 
-    // TODO client must do smth if failed
-    return false;
-  }
+  //   // TODO client must do smth if failed
+  //   return false;
+  // }
 
-  private async fetch(
-    api: MiddlewareAPI,
-    action: APIAction,
-    abortController: AbortController
-  ): Promise<Response> {
-    const refreshAction = this.refreshAction?.();
+  private async fetch(params: StartActionParams): Promise<[Request, Response]> {
+    // const refreshAction = this.refreshAction?.();
 
-    const isRefresh = refreshAction && action.url === refreshAction.url;
+    // const isRefresh = refreshAction && action.url === refreshAction.url;
 
-    const request = buildRequest(this, action, abortController, isRefresh);
+    const request = buildRequest(params);
 
     let response = await fetch(request);
 
-    if (response.status === 401 && !isRefresh) {
-      const isSuccess = await this.refreshToken(api, refreshAction);
+    // if (response.status === 401 && !isRefresh) {
+    //   const isSuccess = await this.refreshToken(api, refreshAction);
 
-      if (isSuccess) {
-        response = await fetch(request);
-      }
-    }
+    //   if (isSuccess) {
+    //     response = await fetch(request);
+    //   }
+    // }
 
-    return response;
+    return [request, response];
   }
 }
