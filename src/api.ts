@@ -84,19 +84,15 @@ export class APIMiddleware {
   // }
 
   private async fetch(params: StartActionParams): Promise<[Request, Response]> {
-    // const refreshAction = this.refreshAction?.();
-
-    // const isRefresh = refreshAction && action.url === refreshAction.url;
-
     const request = buildRequest(params);
 
     let response = await fetch(request);
 
-    // if (response.status === 401 && !isRefresh) {
-    //   const isSuccess = await this.refreshToken(api, refreshAction);
+    // if (!response.ok) {
+    //   const retryRequest = await handleFailedRequest(api, refreshAction);
 
     //   if (isSuccess) {
-    //     response = await fetch(request);
+    //     response = await fetch(retryRequest);
     //   }
     // }
 
