@@ -57,8 +57,10 @@ describe("async actions", () => {
           const { action, abortController } = payload;
           const { onStart, onFail, onSuccess } = action;
 
-          expect((payload as any).response).toEqual(undefined);
-          expect((payload as any).body).toEqual(undefined);
+          // @ts-expect-error
+          expect(payload.response).toEqual(undefined);
+          // @ts-expect-error
+          expect(payload.body).toEqual(undefined);
 
           expect(abortController instanceof AbortController).toBeTruthy();
 
@@ -110,12 +112,15 @@ describe("async actions", () => {
       actions.get({
         onStart(payload) {
           //
+          done();
         },
         onFail() {
           // done('Error: only "onSuccess" must be emited!');
+          done('Error: only "onSuccess" must be emited!');
         },
         onSuccess: async (payload) => {
           //
+          done();
         },
       })
     );
