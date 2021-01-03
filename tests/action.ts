@@ -1,36 +1,34 @@
-import * as CONSTANTS from "./constant";
+import * as CONSTANTS from './constant'
 
-import { APIAction, OnStart, OnFail, OnSuccess } from "../src/type";
+import { APIAction, OnStart, OnFail, OnSuccess } from '../src/apiMiddleware/type'
 
-import { REST_API } from "../src/constant";
+import { REST_API } from '../src/apiMiddleware/constant'
 
 type TestBody = {
-  data: "test";
-};
+  data: 'test'
+}
 
 type StageFunctions = {
-  onStart?: OnStart<TestBody>;
-  onFail?: OnFail<TestBody>;
-  onSuccess?: OnSuccess<TestBody>;
-};
+  onStart?: OnStart<TestBody>
+  onFail?: OnFail<TestBody>
+  onSuccess?: OnSuccess<TestBody>
+}
 
-export const get = (
-  stageAction?: StageFunctions
-): APIAction<unknown, TestBody> => {
+export const get = (stageAction?: StageFunctions): APIAction<unknown, TestBody> => {
   return {
     type: REST_API,
     stageActionTypes: CONSTANTS.GET,
     url: `/api/test/`,
-    method: "get",
+    method: 'get',
     ...stageAction,
-  };
-};
+  }
+}
 
 export const refresh = (): APIAction => {
   return {
     type: REST_API,
     stageActionTypes: CONSTANTS.REFRESH,
     url: `/api/refresh/`,
-    method: "post",
-  };
-};
+    method: 'post',
+  }
+}

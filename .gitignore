@@ -11,6 +11,8 @@
 # production
 /build
 /dist
+.eslintcache
+package
 
 # misc
 .DS_Store

@@ -15,7 +15,7 @@
         "out": "docs"
     },
     "include": [
-        "src/**/*"
+        "src/apiMiddleware/**/*"
     ],
     "exclude": ["node_modules", "dist"]
 }
