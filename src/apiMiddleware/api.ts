@@ -38,7 +38,9 @@ export class APIMiddleware {
     try {
       emitStageFunction(startActionParams)
 
-      store.dispatch(APIActions.start(startActionParams))
+      if (action.stageActionTypes.START) {
+        store.dispatch(APIActions.start(startActionParams))
+      }
 
       const [request, response] = await this.fetch(startActionParams)
 

@@ -6,9 +6,12 @@ import jestFetchMock from 'jest-fetch-mock'
 import * as actions from './action'
 
 import * as CONSTANTS from './constant'
-import { SuccessActionParams } from '../src/apiMiddleware/type'
+import { APIAction, SuccessActionParams } from '../src/apiMiddleware/type'
+import { REST_API } from '../src/apiMiddleware/constant'
+import { tokenToString } from 'typescript'
 
 localStorage.setItem('token', 'pPOiItf7tyd65xiFg8vuIc81c6c61O3g9')
+localStorage.setItem('refreshToken', 'pPgjx4sl0yd65xikp08jlIc81c6c8gy5d')
 
 // Data
 
@@ -36,9 +39,7 @@ describe('async actions', () => {
   })
 
   it('basic', async (done) => {
-    const api = new APIMiddleware({
-      refreshAction: actions.refresh,
-    })
+    const api = new APIMiddleware()
 
     const middlewares = [api.middleware()]
 
@@ -84,14 +85,32 @@ describe('async actions', () => {
     )
   })
 
-  it('headers', async (done) => {
+  it('handle 403', async (done) => {
     const api = new APIMiddleware({
-      refreshAction: actions.refresh,
       headers: ({ action }) => {
         return new Headers({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         })
+      },
+      handleFailedRequest: async ({ response, store, action, request }) => {
+        const refreshToken = localStorage.getItem('refreshToken')
+        const url = '/api/v1/refresh_token'
+
+        if (response.status === 403 && refreshToken && url !== action.url) {
+          await store.dispatch({
+            type: REST_API,
+            url,
+            method: 'post',
+            body: refreshToken,
+            stageActionTypes: { START: 'start', FAIL: 'fail', SUCCESS: 'success' },
+            onSuccess: ({ body }) => {
+              console.log('refresh body', body)
+            },
+          } as APIAction)
+
+          return new Request(request)
+        }
       },
     })
 
@@ -99,7 +118,11 @@ describe('async actions', () => {
 
     const mockStore = configureMockStore(middlewares)
 
-    jestFetchMock.mockResponseOnce(mockDataJson, headersJson)
+    jestFetchMock.mockResponses(
+      ['', { status: 403 }],
+      [JSON.stringify({ token: 'token', refreshToken: 'refreshToken' }), { status: 200 }],
+      ['', { status: 200 }],
+    )
 
     const store = mockStore()
 
