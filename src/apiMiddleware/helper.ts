@@ -49,23 +49,43 @@ export async function getResponseBody(action: APIAction, response: Response): Pr
 export function buildRequest(params: StartActionParams): Request {
   const { action, abortController } = params
 
-  const body: string = typeof action.body !== 'string' ? JSON.stringify(action.body) : action.body
-
-  const credentials = 'same-origin'
-
-  const { method = 'get', url } = action
-
-  const headers = buildHeaders(params)
+  const {
+    body,
+    url,
+    cache,
+    credentials,
+    integrity,
+    keepalive,
+    method,
+    mode,
+    redirect,
+    referrer,
+    referrerPolicy,
+    signal,
+    window,
+  } = action
 
   const request = new Request(url, {
-    signal: abortController.signal,
+    signal: signal || abortController.signal,
+    headers: buildHeaders(params),
+    body: stringifyBody(body),
     method,
+    cache,
+    keepalive,
+    integrity,
     credentials,
-    headers,
-    body,
+    mode,
+    redirect,
+    referrer,
+    referrerPolicy,
+    window,
   })
 
   return request
+}
+
+function stringifyBody(body: unknown): string {
+  return typeof body !== 'string' ? JSON.stringify(body) : body
 }
 
 function buildHeaders(params: StartActionParams): Headers {

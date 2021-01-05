@@ -86,6 +86,6 @@ export type HeadersFormat = Headers | HeadersInit | undefined
 export type APIHeaders = ((params: StartActionParams) => HeadersFormat) | HeadersFormat
 
 export type Settings = {
-  refreshAction?: () => APIAction
+  handleFailedRequest?: (params: Omit<FailActionParams, 'body' | 'requestError'>) => Request | void
   headers?: APIHeaders
 }

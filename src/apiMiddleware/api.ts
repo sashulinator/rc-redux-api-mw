@@ -11,13 +11,13 @@ import { APIAction, Settings, StageAction, StartActionParams } from './type'
 
 // eslint-disable-next-line import/prefer-default-export
 export class APIMiddleware {
-  refreshAction?: Settings['refreshAction']
-
   headers?: Settings['headers']
 
+  handleFailedRequest?: Settings['handleFailedRequest']
+
   constructor(settings?: Settings) {
-    this.refreshAction = settings?.refreshAction
     this.headers = settings?.headers
+    this.handleFailedRequest = settings?.handleFailedRequest
   }
 
   public middleware = (): Middleware<Dispatch<APIAction>> => {
@@ -60,37 +60,23 @@ export class APIMiddleware {
     }
   }
 
-  // private async refreshToken(
-  //   api: MiddlewareAPI,
-  //   refreshAction: APIAction
-  // ): Promise<boolean> {
-  //   const result = await api.dispatch(refreshAction);
-
-  //   // TODO it must be client function
-  //   if (result?.payload?.body?.token && result?.payload?.body?.refreshToken) {
-  //     localStorage.setItem("token", result?.payload?.body?.token);
-  //     localStorage.setItem("refreshToken", result?.payload?.body?.refreshToken);
-
-  //     return true;
-  //   }
-
-  //   // TODO client must do smth if failed
-  //   return false;
-  // }
-
   // eslint-disable-next-line class-methods-use-this
   private async fetch(params: StartActionParams): Promise<[Request, Response]> {
     const request = buildRequest(params)
 
-    const response = await fetch(request)
+    let response = await fetch(request)
 
-    // if (!response.ok) {
-    //   const retryRequest = await handleFailedRequest(api, refreshAction);
+    if (!response.ok && this.handleFailedRequest) {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        // eslint-disable-next-line no-await-in-loop
+        const retryRequest = await this.handleFailedRequest({ request, response, ...params })
 
-    //   if (isSuccess) {
-    //     response = await fetch(retryRequest);
-    //   }
-    // }
+        if (!retryRequest) break
+        // eslint-disable-next-line no-await-in-loop
+        response = await fetch(retryRequest)
+      }
+    }
 
     return [request, response]
   }

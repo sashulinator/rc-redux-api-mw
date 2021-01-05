@@ -11,7 +11,7 @@ function App(): JSX.Element {
     <div className="App">
       <header className="App-header">
         <button type="button" onClick={onButtonClick}>
-          Edit and save to reload.
+          request pokemon
         </button>
       </header>
     </div>
