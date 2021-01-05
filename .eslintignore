@@ -5,4 +5,5 @@ dist
 .prettierrc.js
 scripts
 config
+node_modules
 serviceWorker.*
