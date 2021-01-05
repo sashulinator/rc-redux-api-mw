@@ -10,7 +10,7 @@ export type StageActionTypes = {
 
 export type ResponseBodyType = 'json' | 'text' | 'formData' | 'blob' | 'arrayBuffer' | 'readableStream'
 
-export type APIAction<RequestBody = unknown, ResponseBody = unknown> = RequestInit & {
+export type APIAction<RequestBody = unknown, ResponseBody = unknown> = Omit<RequestInit, 'headers' | 'body'> & {
   url: string
   type: string
   headers?: APIHeaders
@@ -81,13 +81,20 @@ export type FailAction<Body = unknown> = {
   payload: FailActionParams<Body>
 }
 
+export type HandleFailedRequestParams = {
+  request: Request
+  response: Response
+  api: APIMiddleware
+  store: MiddlewareAPI
+}
+
 export type HeadersFormat = Headers | HeadersInit | undefined
 
 export type APIHeaders = ((params: StartActionParams) => HeadersFormat) | HeadersFormat
 
 export type Settings = {
   handleFailedRequest?: (
-    params: Omit<FailActionParams, 'body' | 'requestError'>,
+    params: StartActionParams & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
   headers?: APIHeaders
 }
