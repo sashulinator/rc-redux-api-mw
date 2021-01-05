@@ -1,5 +1,5 @@
 {
-  "name": "rc-redux-api-mv",
+  "name": "@savchenko91/rc-redux-api-mv",
   "version": "1.0.16",
   "private": false,
   "main": "./dist",
