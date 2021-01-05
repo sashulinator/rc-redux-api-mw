@@ -1,7 +1,8 @@
-import { APIMiddleware } from "./api";
-export default APIMiddleware;
+import { APIMiddleware } from './api'
 
-export * from "./api";
-export * from "./combine";
-export * from "./constant";
-export * from "./type";
+export default APIMiddleware
+
+export * from './api'
+export * from './combine'
+export * from './constant'
+export * from './type'

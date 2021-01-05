@@ -1,21 +1,20 @@
 {
-    "compilerOptions": {
-        "declaration": true,
-        "declarationDir": "dist",
-        "module": "CommonJS",
-        "noImplicitAny": true,
-        "lib": ["ES2015", "ES7", "ES6", "dom"],
-        "outDir": "./dist",
-        "target": "ES2019",
-        "sourceMap": false,
-        "moduleResolution": "node"
-    },
-    "typedocOptions": {
-        "mode": "modules",
-        "out": "docs"
-    },
-    "include": [
-        "src/apiMiddleware/**/*"
-    ],
-    "exclude": ["node_modules", "dist"]
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "dist",
+    "module": "CommonJS",
+    "noImplicitAny": true,
+    "lib": ["ES2015", "ES7", "dom.iterable", "ES6", "dom", "esnext"],
+    "outDir": "./dist",
+    "target": "ES2017",
+    "sourceMap": false,
+    "esModuleInterop": true,
+    "moduleResolution": "node"
+  },
+  "typedocOptions": {
+    "mode": "modules",
+    "out": "docs"
+  },
+  "include": ["src/apiMiddleware/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

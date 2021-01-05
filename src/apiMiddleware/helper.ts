@@ -1,8 +1,9 @@
-import { APIAction, FailActionParams, StartActionParams } from './type'
+// eslint-disable-next-line import/no-cycle
+import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './type'
 
 type StageFunctionName = 'onSuccess' | 'onFail' | 'onStart'
 
-export function emitStageFunction(actionParams: FailActionParams) {
+export function emitStageFunction(actionParams: FailActionParams): void {
   const { action, response, requestError } = actionParams
 
   let stageFunctionName: StageFunctionName = requestError ? 'onFail' : 'onStart'
@@ -22,31 +23,31 @@ export function emitStageFunction(actionParams: FailActionParams) {
   }
 }
 
-export async function getResponseBody(action: APIAction, response: Response): Promise<any> {
+export async function getResponseBody(action: APIAction, response: Response): Promise<unknown> {
   const contentType = response.headers.get('Content-Type') || ''
 
   if (action.responseBodyType === 'readableStream') {
     return response.body
-  } else if (action.responseBodyType) {
-    return await response[action.responseBodyType]()
+  }
+  if (action.responseBodyType) {
+    return response[action.responseBodyType]()
   }
 
   if (/json/.test(contentType)) {
-    return await response.json()
-  } else if (/text/.test(contentType)) {
-    return await response.text()
-  } else if (/form-data/.test(contentType)) {
-    return await response.formData()
-  } else {
-    return response.body
+    return response.json()
   }
+  if (/text/.test(contentType)) {
+    return response.text()
+  }
+  if (/form-data/.test(contentType)) {
+    return response.formData()
+  }
+
+  return response.body
 }
 
 export function buildRequest(params: StartActionParams): Request {
   const { action, abortController } = params
-  // const token = isRefresh
-  //   ? localStorage.getItem("refreshToken")
-  //   : localStorage.getItem("token");
 
   const body: string = typeof action.body !== 'string' ? JSON.stringify(action.body) : action.body
 
@@ -70,10 +71,27 @@ export function buildRequest(params: StartActionParams): Request {
 function buildHeaders(params: StartActionParams): Headers {
   const { action, api } = params
 
-  const currentHeaders = action.headers?.(params) || api.headers?.(params) || {}
+  const apiObj = rawHeadersToObj(api.headers, params)
+  const actionObj = rawHeadersToObj(action.headers, params)
 
-  if (currentHeaders instanceof Headers) return currentHeaders
+  return new Headers({ ...apiObj, ...actionObj })
+}
 
-  // use destructuring to avoit typescript error "wrong index signature"
-  return new Headers({ ...currentHeaders })
+function rawHeadersToObj(rawHeaders: APIHeaders, params: StartActionParams): Record<string, string> {
+  if (!rawHeaders) return {}
+
+  if (isFunction<APIHeaders>(rawHeaders)) {
+    rawHeaders = rawHeaders(params)
+  }
+
+  const headers = new Headers(rawHeaders as Headers)
+
+  return Array.from(headers.entries()).reduce((acc: Record<string, string>, [key, value]: [string, string]) => {
+    acc[key] = value
+    return acc
+  }, {})
+}
+
+function isFunction<A = unknown>(f: unknown): f is () => A {
+  return typeof f === 'function'
 }
