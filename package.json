@@ -4,6 +4,12 @@
   "private": false,
   "main": "./dist",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/savchenko91/rc-redux-api-mw"
+  },
+  "author": "Alexander Savchenko <savchenkoalexander91@gmail.com>",
+  "license": "MIT",
   "files": [
     "/dist"
   ],
