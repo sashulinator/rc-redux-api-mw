@@ -66,7 +66,7 @@ export class APIMiddleware {
   private async fetch(params: StartActionParams): Promise<[Request, Response]> {
     const request = buildRequest(params)
 
-    let response = await fetch(request)
+    let response = await fetch(request.clone())
 
     if (!response.ok && this.handleFailedRequest) {
       // eslint-disable-next-line no-constant-condition
