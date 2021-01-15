@@ -98,4 +98,7 @@ export type Settings = {
     params: StartActionParams & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
   headers?: APIHeaders
+  onStart?: OnStart
+  onFail?: OnFail
+  onSuccess?: OnSuccess
 }

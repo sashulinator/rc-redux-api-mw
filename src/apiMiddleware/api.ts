@@ -15,9 +15,18 @@ export class APIMiddleware {
 
   handleFailedRequest?: Settings['handleFailedRequest']
 
+  onStart?: Settings['onStart']
+
+  onFail?: Settings['onFail']
+
+  onSuccess?: Settings['onSuccess']
+
   constructor(settings?: Settings) {
     this.headers = settings?.headers
     this.handleFailedRequest = settings?.handleFailedRequest
+    this.onStart = settings.onStart
+    this.onFail = settings.onFail
+    this.onSuccess = settings.onSuccess
   }
 
   public middleware = (): Middleware<Dispatch<APIAction>> => {
