@@ -93,7 +93,7 @@ describe('async actions', () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         })
       },
-      handleFailedRequest: async ({ response, store, action, request }) => {
+      beforeFail: async ({ response, store, action, request }) => {
         const refreshToken = localStorage.getItem('refreshToken')
         const url = '/api/v1/refresh_token'
 

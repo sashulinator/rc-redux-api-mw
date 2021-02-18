@@ -4,7 +4,7 @@ import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './ty
 type StageFunctionName = 'onSuccess' | 'onFail' | 'onStart'
 
 export function emitStageFunction(stageFunctionName: StageFunctionName, actionParams: FailActionParams): void {
-  const { api, action, requestError } = actionParams
+  const { api, action } = actionParams
 
   try {
     api[stageFunctionName]?.(actionParams as Required<FailActionParams>)
