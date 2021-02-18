@@ -16,8 +16,6 @@ export type APIAction<RequestBody = unknown, ResponseBody = unknown> = Omit<Requ
   headers?: APIHeaders
   body?: RequestBody
 
-  mockResponse?: Response
-
   responseBodyType?: ResponseBodyType
   stageActionTypes: StageActionTypes
   /*
