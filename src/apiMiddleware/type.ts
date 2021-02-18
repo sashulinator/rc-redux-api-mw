@@ -92,7 +92,7 @@ export type HeadersFormat = Headers | HeadersInit | undefined
 export type APIHeaders = ((params: StartActionParams) => HeadersFormat) | HeadersFormat
 
 export type Settings = {
-  handleFailedRequest?: (
+  beforeFail?: (
     params: StartActionParams & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
   headers?: APIHeaders

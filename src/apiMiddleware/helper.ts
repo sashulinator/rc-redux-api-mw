@@ -3,18 +3,8 @@ import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './ty
 
 type StageFunctionName = 'onSuccess' | 'onFail' | 'onStart'
 
-export function emitStageFunction(actionParams: FailActionParams): void {
-  const { api, action, response, requestError } = actionParams
-
-  let stageFunctionName: StageFunctionName = requestError ? 'onFail' : 'onStart'
-
-  if (requestError) {
-    console.error(`ReduxAPIMiddlewareRequestError: ${requestError}`)
-  }
-
-  if (response) {
-    stageFunctionName = response.ok ? 'onSuccess' : 'onFail'
-  }
+export function emitStageFunction(stageFunctionName: StageFunctionName, actionParams: FailActionParams): void {
+  const { api, action, requestError } = actionParams
 
   try {
     api[stageFunctionName]?.(actionParams as Required<FailActionParams>)

@@ -13,7 +13,7 @@ import { APIAction, Settings, StageAction, StartActionParams } from './type'
 export class APIMiddleware {
   headers?: Settings['headers']
 
-  handleFailedRequest?: Settings['handleFailedRequest']
+  beforeFail?: Settings['beforeFail']
 
   onStart?: Settings['onStart']
 
@@ -23,7 +23,7 @@ export class APIMiddleware {
 
   constructor(settings?: Settings) {
     this.headers = settings?.headers
-    this.handleFailedRequest = settings?.handleFailedRequest
+    this.beforeFail = settings?.beforeFail
     this.onStart = settings?.onStart
     this.onFail = settings?.onFail
     this.onSuccess = settings?.onSuccess
@@ -45,7 +45,7 @@ export class APIMiddleware {
     const startActionParams = { action, abortController, store, api: this }
 
     try {
-      emitStageFunction(startActionParams)
+      emitStageFunction('onStart', startActionParams)
 
       if (action.stageActionTypes.START) {
         store.dispatch(APIActions.start(startActionParams))
@@ -57,17 +57,19 @@ export class APIMiddleware {
 
       const endActionParams = { body, request, response, ...startActionParams }
 
-      emitStageFunction(endActionParams)
+      emitStageFunction(response.ok ? 'onSuccess' : 'onFail', endActionParams)
 
-      return store.dispatch(APIActions[response.ok ? 'success' : 'fail'](endActionParams))
-    } catch (e) {
-      const requestError = e.toString()
+      return store.dispatch(response.ok ? APIActions.success(endActionParams) : APIActions.fail(endActionParams))
+    } catch (error) {
+      const requestError = error.toString()
 
       const failActionParams = { requestError, ...startActionParams }
 
-      emitStageFunction(failActionParams)
+      emitStageFunction('onFail', failActionParams)
 
-      return store.dispatch(APIActions.fail(failActionParams))
+      store.dispatch(APIActions.fail(failActionParams))
+
+      throw error
     }
   }
 
@@ -77,11 +79,11 @@ export class APIMiddleware {
 
     let response = await fetch(request.clone())
 
-    if (!response.ok && this.handleFailedRequest) {
+    if (!response.ok && this.beforeFail) {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         // eslint-disable-next-line no-await-in-loop
-        const retryRequest = await this.handleFailedRequest({ request, response, ...params })
+        const retryRequest = await this.beforeFail({ request, response, ...params })
 
         if (!retryRequest) break
         // eslint-disable-next-line no-await-in-loop
