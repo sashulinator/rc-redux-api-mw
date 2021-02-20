@@ -4,10 +4,10 @@ import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './ty
 type StageFunctionName = 'onSuccess' | 'onFail' | 'onStart'
 
 export function emitStageFunction(stageFunctionName: StageFunctionName, actionParams: FailActionParams): void {
-  const { api, action } = actionParams
+  const { config, action } = actionParams
 
   try {
-    api[stageFunctionName]?.(actionParams as Required<FailActionParams>)
+    config?.[stageFunctionName]?.(actionParams as Required<FailActionParams>)
     action[stageFunctionName]?.(actionParams as Required<FailActionParams>)
   } catch (e) {
     console.error(`ReduxAPIMiddleware${stageFunctionName}FunctionError: ${e}`)
@@ -80,9 +80,9 @@ function stringifyBody(body: unknown): string {
 }
 
 function buildHeaders(params: StartActionParams): Headers {
-  const { action, api } = params
+  const { action, config } = params
 
-  const apiObj = rawHeadersToObj(api.headers, params)
+  const apiObj = rawHeadersToObj(config?.headers, params)
   const actionObj = rawHeadersToObj(action.headers, params)
 
   return new Headers({ ...apiObj, ...actionObj })

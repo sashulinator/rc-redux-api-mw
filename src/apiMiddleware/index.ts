@@ -1,8 +1,6 @@
-import { APIMiddleware } from './api'
+import APIReduxMiddleware from './api'
 
-export default APIMiddleware
+export default APIReduxMiddleware
 
-export * from './api'
-export * from './combine'
 export * from './constant'
 export * from './type'

@@ -26,6 +26,7 @@ module.exports = {
     'jsx-a11y/click-events-have-key-events': 'off',
     'import/no-named-as-default': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'import/prefer-default-export': 'off',
   },
   extends: [
     'airbnb-typescript',

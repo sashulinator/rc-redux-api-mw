@@ -7,26 +7,13 @@ import { REST_API } from './constant'
 
 import { buildRequest, emitStageFunction, getResponseBody } from './helper'
 
-import { APIAction, Settings, StageAction, StartActionParams } from './type'
+import { APIAction, Config, StageAction, StartActionParams } from './type'
 
-// eslint-disable-next-line import/prefer-default-export
-export class APIMiddleware {
-  headers?: Settings['headers']
+class APIReduxMiddleware {
+  config: Config
 
-  beforeFail?: Settings['beforeFail']
-
-  onStart?: Settings['onStart']
-
-  onFail?: Settings['onFail']
-
-  onSuccess?: Settings['onSuccess']
-
-  constructor(settings?: Settings) {
-    this.headers = settings?.headers
-    this.beforeFail = settings?.beforeFail
-    this.onStart = settings?.onStart
-    this.onFail = settings?.onFail
-    this.onSuccess = settings?.onSuccess
+  constructor(config?: Config) {
+    this.config = config || null
   }
 
   public middleware = (): Middleware<Dispatch<APIAction>> => {
@@ -42,7 +29,7 @@ export class APIMiddleware {
   private async request(action: APIAction, store: MiddlewareAPI): Promise<StageAction> {
     const abortController = new AbortController()
 
-    const startActionParams = { action, abortController, store, api: this }
+    const startActionParams = { action, abortController, store, config: this.config }
 
     try {
       emitStageFunction('onStart', startActionParams)
@@ -73,17 +60,16 @@ export class APIMiddleware {
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private async fetch(params: StartActionParams): Promise<[Request, Response]> {
     const request = buildRequest(params)
 
     let response = await fetch(request.clone())
 
-    if (!response.ok && this.beforeFail) {
+    if (!response.ok && this.config?.beforeFail) {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         // eslint-disable-next-line no-await-in-loop
-        const retryRequest = await this.beforeFail({ request, response, ...params })
+        const retryRequest = await this.config.beforeFail({ request, response, ...params })
 
         if (!retryRequest) break
         // eslint-disable-next-line no-await-in-loop
@@ -94,3 +80,5 @@ export class APIMiddleware {
     return [request, response]
   }
 }
+
+export default APIReduxMiddleware

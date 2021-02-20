@@ -1,4 +1,4 @@
-import { APIMiddleware } from '../src/apiMiddleware/api'
+import APIMiddleware from '../src/apiMiddleware/api'
 
 import configureMockStore from 'redux-mock-store'
 

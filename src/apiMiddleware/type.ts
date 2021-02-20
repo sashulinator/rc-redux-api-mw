@@ -1,6 +1,4 @@
 import { MiddlewareAPI } from 'redux'
-// eslint-disable-next-line import/no-cycle
-import { APIMiddleware } from './api'
 
 export type StageActionTypes = {
   START: string
@@ -46,7 +44,7 @@ export type StageAction<ResponseBody = unknown, RequestBody = unknown> = {
 export type StartActionParams<Body = unknown> = {
   abortController: AbortController
   action: APIAction<Body>
-  api: APIMiddleware
+  config: Config
   store: MiddlewareAPI
 }
 
@@ -59,7 +57,7 @@ export type SuccessActionParams<Body = unknown> = StartActionParams & {
   body: Body
   request: Request
   response: Response
-  api: APIMiddleware
+  config: Config
   store: MiddlewareAPI
 }
 
@@ -71,7 +69,7 @@ export type SuccessAction<Body = unknown> = {
 export type FailActionParams<Body = unknown> = StartActionParams &
   Partial<SuccessActionParams<Body>> & {
     requestError?: string
-    api: APIMiddleware
+    config: Config
     store: MiddlewareAPI
   }
 
@@ -83,7 +81,7 @@ export type FailAction<Body = unknown> = {
 export type HandleFailedRequestParams = {
   request: Request
   response: Response
-  api: APIMiddleware
+  config: Config
   store: MiddlewareAPI
 }
 
@@ -91,7 +89,7 @@ export type HeadersFormat = Headers | HeadersInit | undefined
 
 export type APIHeaders = ((params: StartActionParams) => HeadersFormat) | HeadersFormat
 
-export type Settings = {
+export type Config = null | {
   beforeFail?: (
     params: StartActionParams & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
