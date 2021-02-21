@@ -10,21 +10,21 @@ import {
 
 export const onStart = (payload: StartActionParams): StartAction => {
   return {
-    type: payload.action.stageActionTypes.START || 'REST_API | START',
+    type: payload.action.stageActionTypes.START || 'REDUX_API_MIDDLEWARE | START',
     payload,
   }
 }
 
 export const onFail = (payload: FailActionParams): FailAction => {
   return {
-    type: payload.action.stageActionTypes.FAIL || 'REST_API | FAIL',
+    type: payload.action.stageActionTypes.FAIL || 'REDUX_API_MIDDLEWARE | FAIL',
     payload,
   }
 }
 
 export const onSuccess = (payload: SuccessActionParams): SuccessAction => {
   return {
-    type: payload.action.stageActionTypes.SUCCESS || 'REST_API | SUCCESS',
+    type: payload.action.stageActionTypes.SUCCESS || 'REDUX_API_MIDDLEWARE | SUCCESS',
     payload,
   }
 }

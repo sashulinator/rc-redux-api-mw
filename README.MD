@@ -5,7 +5,7 @@ Simple API middleware
 ### Usage
 
 ```js
-import { REST_API } from '@savchenko91/rc-redux-api-mw'
+import { REDUX_API_MIDDLEWARE } from '@savchenko91/rc-redux-api-mw'
 
 const SAVE_CAT = {
   START: 'CATS | SAVE | START',
@@ -14,7 +14,7 @@ const SAVE_CAT = {
 }
 
 const saveCat = (id, body, onSuccess) => ({
-  type: REST_API,
+  type: REDUX_API_MIDDLEWARE,
   url: `/api/v1/cats/${id}`,
   method: 'post',
   stageActionTypes: SAVE_CAT,

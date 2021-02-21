@@ -1,1 +1,1 @@
-export const REST_API = 'REST_API'
+export const REDUX_API_MIDDLEWARE = 'REDUX_API_MIDDLEWARE'

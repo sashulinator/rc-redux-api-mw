@@ -2,7 +2,7 @@ import * as CONSTANTS from './constant'
 
 import { APIAction, OnStart, OnFail, OnSuccess } from '../src/type'
 
-import { REST_API } from '../src/constant'
+import { REDUX_API_MIDDLEWARE } from '../src/constant'
 
 type TestBody = {
   data: 'test'
@@ -16,7 +16,7 @@ type StageFunctions = {
 
 export const get = (stageAction?: StageFunctions): APIAction<unknown, TestBody> => {
   return {
-    type: REST_API,
+    type: REDUX_API_MIDDLEWARE,
     stageActionTypes: CONSTANTS.GET,
     url: `/api/test/`,
     method: 'get',
@@ -26,7 +26,7 @@ export const get = (stageAction?: StageFunctions): APIAction<unknown, TestBody> 
 
 export const refresh = (): APIAction => {
   return {
-    type: REST_API,
+    type: REDUX_API_MIDDLEWARE,
     stageActionTypes: CONSTANTS.REFRESH,
     url: `/api/refresh/`,
     method: 'post',

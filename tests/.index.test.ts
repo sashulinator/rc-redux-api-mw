@@ -7,7 +7,7 @@ import * as actions from './action'
 
 import * as CONSTANTS from './constant'
 import { APIAction, SuccessActionParams } from '../src/type'
-import { REST_API } from '../src/constant'
+import { REDUX_API_MIDDLEWARE } from '../src/constant'
 import { tokenToString } from 'typescript'
 
 localStorage.setItem('token', 'pPOiItf7tyd65xiFg8vuIc81c6c61O3g9')
@@ -99,7 +99,7 @@ describe('async actions', () => {
 
         if (response.status === 403 && refreshToken && url !== action.url) {
           await store.dispatch({
-            type: REST_API,
+            type: REDUX_API_MIDDLEWARE,
             url,
             method: 'post',
             body: refreshToken,

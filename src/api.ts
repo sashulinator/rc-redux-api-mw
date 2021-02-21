@@ -1,7 +1,7 @@
 /* eslint-disable import/no-cycle */
 import { Middleware, Dispatch, MiddlewareAPI } from 'redux'
 
-import { REST_API } from './constant'
+import { REDUX_API_MIDDLEWARE } from './constant'
 
 import { buildRequest, onStage, getResponseBody } from './helper'
 
@@ -16,11 +16,11 @@ class APIReduxMiddleware {
 
   public middleware = (): Middleware<Dispatch<APIAction>> => {
     return (api) => (next) => async (action: APIAction): Promise<APIAction | StageAction> => {
-      if (action.type !== REST_API) {
+      if (action.type !== REDUX_API_MIDDLEWARE) {
         return next(action)
       }
 
-      this.request(action, api)
+      await this.request(action, api)
 
       return action
     }
