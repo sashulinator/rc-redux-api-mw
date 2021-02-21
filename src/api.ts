@@ -1,11 +1,9 @@
 /* eslint-disable import/no-cycle */
 import { Middleware, Dispatch, MiddlewareAPI } from 'redux'
 
-import * as APIActions from './action'
-
 import { REST_API } from './constant'
 
-import { buildRequest, emitStageFunction, getResponseBody } from './helper'
+import { buildRequest, onStage, getResponseBody } from './helper'
 
 import { APIAction, Config, StageAction, StartActionParams } from './type'
 
@@ -22,39 +20,31 @@ class APIReduxMiddleware {
         return next(action)
       }
 
-      return this.request(action, api)
+      this.request(action, api)
+
+      return action
     }
   }
 
-  private async request(action: APIAction, store: MiddlewareAPI): Promise<StageAction> {
+  private async request(action: APIAction, store: MiddlewareAPI): Promise<void> {
     const abortController = new AbortController()
 
     const startActionParams = { action, abortController, store, config: this.config }
 
     try {
-      emitStageFunction('onStart', startActionParams)
-
-      if (action.stageActionTypes.START) {
-        store.dispatch(APIActions.start(startActionParams))
-      }
-
       const [request, response] = await this.fetch(startActionParams)
+
+      onStage('onStart', startActionParams)
 
       const body = await getResponseBody(action, response)
 
       const endActionParams = { body, request, response, ...startActionParams }
 
-      emitStageFunction(response.ok ? 'onSuccess' : 'onFail', endActionParams)
-
-      return store.dispatch(response.ok ? APIActions.success(endActionParams) : APIActions.fail(endActionParams))
+      onStage(response.ok ? 'onSuccess' : 'onFail', endActionParams)
     } catch (error) {
-      const requestError = error.toString()
+      const failActionParams = { error, ...startActionParams }
 
-      const failActionParams = { requestError, ...startActionParams }
-
-      emitStageFunction('onFail', failActionParams)
-
-      store.dispatch(APIActions.fail(failActionParams))
+      onStage('onFail', failActionParams)
 
       throw error
     }

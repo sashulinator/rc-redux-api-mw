@@ -1,4 +1,4 @@
-import APIMiddleware from '../src/apiMiddleware/api'
+import APIMiddleware from '../src/api'
 
 import configureMockStore from 'redux-mock-store'
 
@@ -6,8 +6,8 @@ import jestFetchMock from 'jest-fetch-mock'
 import * as actions from './action'
 
 import * as CONSTANTS from './constant'
-import { APIAction, SuccessActionParams } from '../src/apiMiddleware/type'
-import { REST_API } from '../src/apiMiddleware/constant'
+import { APIAction, SuccessActionParams } from '../src/type'
+import { REST_API } from '../src/constant'
 import { tokenToString } from 'typescript'
 
 localStorage.setItem('token', 'pPOiItf7tyd65xiFg8vuIc81c6c61O3g9')

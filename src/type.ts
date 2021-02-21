@@ -68,7 +68,7 @@ export type SuccessAction<Body = unknown> = {
 
 export type FailActionParams<Body = unknown> = StartActionParams &
   Partial<SuccessActionParams<Body>> & {
-    requestError?: string
+    error?: string
     config: Config
     store: MiddlewareAPI
   }

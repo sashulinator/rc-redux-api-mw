@@ -54,6 +54,6 @@ module.exports = {
   // },
   parserOptions: {
     ecmaVersion: 2018,
-    project: './tsconfig.dev.json',
+    project: './tsconfig.json',
   },
 }

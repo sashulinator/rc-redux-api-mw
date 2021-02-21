@@ -8,21 +8,21 @@ import {
   SuccessActionParams,
 } from './type'
 
-export const start = (payload: StartActionParams): StartAction => {
+export const onStart = (payload: StartActionParams): StartAction => {
   return {
     type: payload.action.stageActionTypes.START || 'REST_API | START',
     payload,
   }
 }
 
-export const fail = (payload: FailActionParams): FailAction => {
+export const onFail = (payload: FailActionParams): FailAction => {
   return {
     type: payload.action.stageActionTypes.FAIL || 'REST_API | FAIL',
     payload,
   }
 }
 
-export const success = (payload: SuccessActionParams): SuccessAction => {
+export const onSuccess = (payload: SuccessActionParams): SuccessAction => {
   return {
     type: payload.action.stageActionTypes.SUCCESS || 'REST_API | SUCCESS',
     payload,

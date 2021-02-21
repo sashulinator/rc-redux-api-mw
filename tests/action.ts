@@ -1,8 +1,8 @@
 import * as CONSTANTS from './constant'
 
-import { APIAction, OnStart, OnFail, OnSuccess } from '../src/apiMiddleware/type'
+import { APIAction, OnStart, OnFail, OnSuccess } from '../src/type'
 
-import { REST_API } from '../src/apiMiddleware/constant'
+import { REST_API } from '../src/constant'
 
 type TestBody = {
   data: 'test'

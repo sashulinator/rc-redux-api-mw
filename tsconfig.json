@@ -15,6 +15,6 @@
     "mode": "modules",
     "out": "docs"
   },
-  "include": ["src/apiMiddleware/**/*"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist", "src/index"]
 }

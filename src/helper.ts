@@ -1,17 +1,22 @@
 // eslint-disable-next-line import/no-cycle
 import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './type'
 
+import * as APIActions from './action'
+
 type StageFunctionName = 'onSuccess' | 'onFail' | 'onStart'
 
-export function emitStageFunction(stageFunctionName: StageFunctionName, actionParams: FailActionParams): void {
-  const { config, action } = actionParams
+export async function onStage(
+  stageFunctionName: StageFunctionName,
+  partialActionParams: FailActionParams,
+): Promise<void> {
+  const { config, action, store } = partialActionParams
 
-  try {
-    config?.[stageFunctionName]?.(actionParams as Required<FailActionParams>)
-    action[stageFunctionName]?.(actionParams as Required<FailActionParams>)
-  } catch (e) {
-    console.error(`ReduxAPIMiddleware${stageFunctionName}FunctionError: ${e}`)
-  }
+  const actionParams = partialActionParams as Required<FailActionParams>
+
+  store.dispatch(APIActions[stageFunctionName](actionParams))
+
+  Promise.resolve(actionParams).then(config?.[stageFunctionName])
+  Promise.resolve(actionParams).then(action[stageFunctionName])
 }
 
 export async function getResponseBody(action: APIAction, response: Response): Promise<unknown> {
@@ -20,7 +25,8 @@ export async function getResponseBody(action: APIAction, response: Response): Pr
   if (action.responseBodyType === 'readableStream') {
     return response.body
   }
-  if (action.responseBodyType) {
+
+  if (response.ok && action.responseBodyType) {
     return response[action.responseBodyType]()
   }
 
