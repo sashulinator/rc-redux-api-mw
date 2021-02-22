@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-cycle
 import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './type'
 
 import * as APIActions from './action'

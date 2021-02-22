@@ -32,9 +32,11 @@ class APIReduxMiddleware {
     const startActionParams = { action, abortController, store, config: this.config }
 
     try {
-      const [request, response] = await this.fetch(startActionParams)
+      const fetchPromise = this.fetch(startActionParams)
 
       onStage('onStart', startActionParams)
+
+      const [request, response] = await fetchPromise
 
       const body = await getResponseBody(action, response)
 
