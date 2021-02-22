@@ -8,93 +8,107 @@ export type StageActionTypes = {
 
 export type ResponseBodyType = 'json' | 'text' | 'formData' | 'blob' | 'arrayBuffer' | 'readableStream'
 
-export type APIAction<RequestBody = unknown, ResponseBody = unknown> = Omit<RequestInit, 'headers' | 'body'> & {
+export type APIAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = Omit<
+  RequestInit,
+  'headers' | 'body'
+> & {
   url: string
   type: string
   headers?: APIHeaders
   body?: RequestBody
-
   responseBodyType?: ResponseBodyType
   stageActionTypes: StageActionTypes
-  /*
-  put any data you want to receive in your reducer
-  */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload?: any
-
-  onStart?: OnStart<ResponseBody>
-  onSuccess?: OnSuccess<ResponseBody>
-  onFail?: OnFail<ResponseBody>
+  onStart?: OnStart<ResponseBody, RequestBody, Payload>
+  onSuccess?: OnSuccess<ResponseBody, RequestBody, Payload>
+  onFail?: OnFail<ResponseBody, RequestBody, Payload>
+  // put any data you want to receive in your reducer
+  payload?: Payload
 }
 
-export type OnStart<Body = unknown> = (params: StartActionParams<Body>) => void
-export type OnFail<Body = unknown> = (params: FailActionParams<Body>) => void
-export type OnSuccess<Body = unknown> = (params: SuccessActionParams<Body>) => void
+export type OnStart<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = (
+  params: StartActionParams<ResponseBody, RequestBody, Payload>,
+) => void
+export type OnFail<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = (
+  params: FailActionParams<ResponseBody, RequestBody, Payload>,
+) => void
+export type OnSuccess<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = (
+  params: SuccessActionParams<ResponseBody, RequestBody, Payload>,
+) => void
 
-export type StageAction<ResponseBody = unknown, RequestBody = unknown> = {
+export type StageAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
   type: string
   payload: {
     abortController?: AbortController
-    action: APIAction<RequestBody>
+    action: APIAction<ResponseBody, RequestBody, Payload>
     body?: ResponseBody
     response?: Response
   }
 }
 
-export type StartActionParams<Body = unknown> = {
+export type StartActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
   abortController: AbortController
-  action: APIAction<Body>
-  config: Config
+  action: APIAction<ResponseBody, RequestBody, Payload>
+  config: Config<ResponseBody, RequestBody, Payload>
   store: MiddlewareAPI
 }
 
-export type StartAction<Body = unknown> = {
+export type StartAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
   type: string
-  payload: StartActionParams<Body>
+  payload: StartActionParams<ResponseBody, RequestBody, Payload>
 }
 
-export type SuccessActionParams<Body = unknown> = StartActionParams & {
-  body: Body
+export type SuccessActionParams<
+  ResponseBody = unknown,
+  RequestBody = unknown,
+  Payload = unknown
+> = StartActionParams & {
+  body: ResponseBody
   request: Request
   response: Response
-  config: Config
+  config: Config<ResponseBody, RequestBody, Payload>
   store: MiddlewareAPI
 }
 
-export type SuccessAction<Body = unknown> = {
+export type SuccessAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
   type: string
-  payload: SuccessActionParams<Body>
+  payload: SuccessActionParams<ResponseBody, RequestBody, Payload>
 }
 
-export type FailActionParams<Body = unknown> = StartActionParams &
-  Partial<SuccessActionParams<Body>> & {
+export type FailActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = StartActionParams<
+  ResponseBody,
+  RequestBody,
+  Payload
+> &
+  Partial<SuccessActionParams<ResponseBody, RequestBody, Payload>> & {
     error?: string
-    config: Config
+    config: Config<ResponseBody, RequestBody, Payload>
     store: MiddlewareAPI
   }
 
-export type FailAction<Body = unknown> = {
+export type FailAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
   type: string
-  payload: FailActionParams<Body>
+  payload: FailActionParams<ResponseBody, RequestBody, Payload>
 }
 
-export type HandleFailedRequestParams = {
+export type BeforeFailParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
   request: Request
   response: Response
-  config: Config
+  config: Config<ResponseBody, RequestBody, Payload>
   store: MiddlewareAPI
 }
 
 export type HeadersFormat = Headers | HeadersInit | undefined
 
-export type APIHeaders = ((params: StartActionParams) => HeadersFormat) | HeadersFormat
+export type APIHeaders<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> =
+  | ((params: StartActionParams<ResponseBody, RequestBody, Payload>) => HeadersFormat)
+  | HeadersFormat
 
-export type Config = null | {
+export type Config<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = null | {
   beforeFail?: (
-    params: StartActionParams & { response: Response; request: Request },
+    params: StartActionParams<ResponseBody, RequestBody, Payload> & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
   headers?: APIHeaders
-  onStart?: OnStart
-  onFail?: OnFail
-  onSuccess?: OnSuccess
+  onStart?: OnStart<ResponseBody, RequestBody, Payload>
+  onFail?: OnFail<ResponseBody, RequestBody, Payload>
+  onSuccess?: OnSuccess<ResponseBody, RequestBody, Payload>
 }
