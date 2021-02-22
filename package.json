@@ -1,6 +1,6 @@
 {
   "name": "@savchenko91/rc-redux-api-mw",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "private": false,
   "main": "./dist",
   "types": "./dist/index.d.ts",
