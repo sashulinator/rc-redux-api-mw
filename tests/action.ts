@@ -8,13 +8,13 @@ type TestBody = {
   data: 'test'
 }
 
-type StageFunctions = {
-  onStart?: OnStart<TestBody>
-  onFail?: OnFail<TestBody>
-  onSuccess?: OnSuccess<TestBody>
+type StageFunctions<Body> = {
+  onStart?: OnStart<Body>
+  onFail?: OnFail<Body>
+  onSuccess?: OnSuccess<Body>
 }
 
-export const get = (stageAction?: StageFunctions): APIAction<unknown, TestBody> => {
+export const get = (stageAction?: StageFunctions<TestBody>): APIAction<TestBody> => {
   return {
     type: REDUX_API_MIDDLEWARE,
     stageActionTypes: CONSTANTS.GET,

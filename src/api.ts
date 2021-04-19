@@ -2,10 +2,8 @@
 import { Middleware, Dispatch, MiddlewareAPI } from 'redux'
 
 import { REDUX_API_MIDDLEWARE } from './constant'
-
 import { buildRequest, onStage, getResponseBody } from './helper'
-
-import { APIAction, Config, StageAction, StartActionParams } from './type'
+import { APIAction, Config, StageAction, StartActionParams, StageFunctionName } from './type'
 
 class APIReduxMiddleware {
   config: Config
@@ -34,7 +32,7 @@ class APIReduxMiddleware {
     try {
       const fetchPromise = this.fetch(startActionParams)
 
-      onStage('onStart', startActionParams)
+      onStage(StageFunctionName.onStart, startActionParams)
 
       const [request, response] = await fetchPromise
 
@@ -42,11 +40,11 @@ class APIReduxMiddleware {
 
       const endActionParams = { body, request, response, ...startActionParams }
 
-      onStage(response.ok ? 'onSuccess' : 'onFail', endActionParams)
+      onStage(response.ok ? StageFunctionName.onSuccess : StageFunctionName.onFail, endActionParams)
     } catch (error) {
       const failActionParams = { error, ...startActionParams }
 
-      onStage('onFail', failActionParams)
+      onStage(StageFunctionName.onFail, failActionParams)
 
       throw error
     }

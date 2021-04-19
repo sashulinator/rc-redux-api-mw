@@ -1,8 +1,6 @@
-import { APIAction, APIHeaders, FailActionParams, StartActionParams } from './type'
+import { APIAction, APIHeaders, FailActionParams, StartActionParams, StageFunctionName } from './type'
 
 import * as APIActions from './action'
-
-type StageFunctionName = 'onSuccess' | 'onFail' | 'onStart'
 
 export async function onStage(
   stageFunctionName: StageFunctionName,
