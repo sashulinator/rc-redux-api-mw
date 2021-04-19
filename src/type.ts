@@ -6,14 +6,20 @@ export type StageActionTypes = {
   SUCCESS: string
 }
 
-export type ResponseBodyType = 'json' | 'text' | 'formData' | 'blob' | 'arrayBuffer' | 'readableStream'
+export enum ResponseBodyType {
+  json = 'json',
+  text = 'text',
+  formData = 'formData',
+  blob = 'blob',
+  arrayBuffer = 'arrayBuffer',
+  readableStream = 'readableStream',
+}
 
-export type APIAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = Omit<
-  RequestInit,
-  'headers' | 'body'
-> & {
+export interface APIAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown>
+  extends Omit<RequestInit, 'headers' | 'body'> {
   url: string
   type: string
+  returnResponse?: boolean
   headers?: APIHeaders
   body?: RequestBody
   responseBodyType?: ResponseBodyType
@@ -25,17 +31,17 @@ export type APIAction<ResponseBody = unknown, RequestBody = unknown, Payload = u
   payload?: Payload
 }
 
-export type OnStart<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = (
-  params: StartActionParams<ResponseBody, RequestBody, Payload>,
-) => void
-export type OnFail<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = (
-  params: FailActionParams<ResponseBody, RequestBody, Payload>,
-) => void
-export type OnSuccess<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = (
-  params: SuccessActionParams<ResponseBody, RequestBody, Payload>,
-) => void
+export interface OnStart<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
+  (params: StartActionParams<ResponseBody, RequestBody, Payload>): void
+}
+export interface OnFail<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
+  (params: FailActionParams<ResponseBody, RequestBody, Payload>): void
+}
+export interface OnSuccess<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
+  (params: SuccessActionParams<ResponseBody, RequestBody, Payload>): void
+}
 
-export type StageAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
+export interface StageAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   type: string
   payload: {
     abortController?: AbortController
@@ -45,52 +51,49 @@ export type StageAction<ResponseBody = unknown, RequestBody = unknown, Payload =
   }
 }
 
-export type StartActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
+export interface StartActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   abortController: AbortController
   action: APIAction<ResponseBody, RequestBody, Payload>
   config: Config<ResponseBody, RequestBody, Payload>
   store: MiddlewareAPI
 }
 
-export type StartAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
+export interface StartAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   type: string
   payload: StartActionParams<ResponseBody, RequestBody, Payload>
+  action: APIAction<ResponseBody, RequestBody, Payload>
 }
 
-export type SuccessActionParams<
-  ResponseBody = unknown,
-  RequestBody = unknown,
-  Payload = unknown
-> = StartActionParams & {
+export interface SuccessActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown>
+  extends StartActionParams {
   body: ResponseBody
   request: Request
   response: Response
   config: Config<ResponseBody, RequestBody, Payload>
-  store: MiddlewareAPI
+  action: APIAction<ResponseBody, RequestBody, Payload>
 }
 
-export type SuccessAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
+export interface SuccessAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   type: string
   payload: SuccessActionParams<ResponseBody, RequestBody, Payload>
 }
 
-export type FailActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = StartActionParams<
-  ResponseBody,
-  RequestBody,
-  Payload
-> &
-  Partial<SuccessActionParams<ResponseBody, RequestBody, Payload>> & {
-    error?: string
-    config: Config<ResponseBody, RequestBody, Payload>
-    store: MiddlewareAPI
-  }
+export interface FailActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown>
+  extends StartActionParams<ResponseBody, RequestBody, Payload> {
+  body?: ResponseBody
+  request?: Request
+  response?: Response
+  error?: string
+  config: Config<ResponseBody, RequestBody, Payload>
+  action: APIAction<ResponseBody, RequestBody, Payload>
+}
 
-export type FailAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
+export interface FailAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   type: string
   payload: FailActionParams<ResponseBody, RequestBody, Payload>
 }
 
-export type BeforeFailParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = {
+export interface BeforeFailParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   request: Request
   response: Response
   config: Config<ResponseBody, RequestBody, Payload>
@@ -103,7 +106,7 @@ export type APIHeaders<ResponseBody = unknown, RequestBody = unknown, Payload = 
   | ((params: StartActionParams<ResponseBody, RequestBody, Payload>) => HeadersFormat)
   | HeadersFormat
 
-export type Config<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = null | {
+export interface Config<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   beforeFail?: (
     params: StartActionParams<ResponseBody, RequestBody, Payload> & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
@@ -111,4 +114,10 @@ export type Config<ResponseBody = unknown, RequestBody = unknown, Payload = unkn
   onStart?: OnStart<ResponseBody, RequestBody, Payload>
   onFail?: OnFail<ResponseBody, RequestBody, Payload>
   onSuccess?: OnSuccess<ResponseBody, RequestBody, Payload>
+}
+
+export enum StageFunctionName {
+  onSuccess = 'onSuccess',
+  onFail = 'onFail',
+  onStart = 'onStart',
 }
