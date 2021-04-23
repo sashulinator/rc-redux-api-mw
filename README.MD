@@ -2,24 +2,13 @@
 
 Simple API middleware
 
-<<<<<<< HEAD
-
 ## Features
 
 - No dependencies
 - Neat JWT token refreshing
 - Neat error handling
 - Request aborting
-- # Queries as object [linktoquerylibrary]
-
-## Features
-
-- No dependencies
-- Neat JWT token refreshing
-- Neat error handling
-- Request aborting
-- Queries as object [linktoquerylibrary]
-  > > > > > > > e7f2b9755101ec8705ae303127fe855d8ef71fa7
+- [Pass queries as an object](#pass-queries-as-an-object)
 
 ## Usage
 
@@ -135,7 +124,7 @@ function mixReducer(store = initialStore, action) {
 }
 ```
 
-### Queries as object
+### Pass queries as an object
 
 [rc-redux-api-mw-query](https://www.npmjs.com/package/@savchenko91/rc-redux-api-mw-query)
 
