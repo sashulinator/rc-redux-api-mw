@@ -61,6 +61,7 @@ export interface StartActionParams<ResponseBody = unknown, RequestBody = unknown
 export interface StartAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   type: string
   payload: StartActionParams<ResponseBody, RequestBody, Payload>
+  action: APIAction<ResponseBody, RequestBody, Payload>
 }
 
 export interface SuccessActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown>
