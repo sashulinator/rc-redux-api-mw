@@ -130,7 +130,7 @@ function mixReducer(store = initialStore, action) {
 
 ## Additional
 
-### Pass to a store some data
+### Pass some data to a store
 
 ```ts
 const mix = ({ data, projectId }) => {
