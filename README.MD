@@ -1,3 +1,8 @@
+# rc-redux-api-mw
+
+![code size](https://img.shields.io/github/languages/code-size/savchenko91/rc-redux-api-mw)
+[![code size](https://img.shields.io/github/v/release/savchenko91/rc-redux-api-mw)](https://github.com/savchenko91/rc-redux-api-mw/releases)
+
 ## What is it?
 
 Simple API middleware
@@ -130,7 +135,7 @@ function mixReducer(store = initialStore, action) {
 
 ## Additional
 
-### Pass to a store some data
+### Pass some data to a store
 
 ```ts
 const mix = ({ data, projectId }) => {

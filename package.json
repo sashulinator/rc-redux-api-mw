@@ -18,8 +18,8 @@
     "prepare": "rm -rf dist && npm run build",
     "test": "jest --coverage"
   },
-  "dependencies": {
-    "@types/redux": "^3.6.0"
+  "peerDependencies": {
+    "redux": "*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.4",
