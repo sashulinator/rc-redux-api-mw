@@ -6,7 +6,7 @@ import { buildRequest, onStage, getResponseBody } from './helper'
 import { APIAction, Config, StageAction, StartActionParams, StageFunctionName } from './type'
 
 class APIReduxMiddleware {
-  config: Config
+  config: Config | null
 
   constructor(config?: Config) {
     this.config = config || null

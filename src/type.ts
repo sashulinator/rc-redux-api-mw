@@ -54,7 +54,7 @@ export interface StageAction<ResponseBody = unknown, RequestBody = unknown, Payl
 export interface StartActionParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   abortController: AbortController
   action: APIAction<ResponseBody, RequestBody, Payload>
-  config: Config<ResponseBody, RequestBody, Payload>
+  config: Config<ResponseBody, RequestBody, Payload> | null
   store: MiddlewareAPI
 }
 
@@ -68,7 +68,7 @@ export interface SuccessActionParams<ResponseBody = unknown, RequestBody = unkno
   body: ResponseBody
   request: Request
   response: Response
-  config: Config<ResponseBody, RequestBody, Payload>
+  config: Config<ResponseBody, RequestBody, Payload> | null
   action: APIAction<ResponseBody, RequestBody, Payload>
 }
 
@@ -83,7 +83,7 @@ export interface FailActionParams<ResponseBody = unknown, RequestBody = unknown,
   request?: Request
   response?: Response
   error?: string
-  config: Config<ResponseBody, RequestBody, Payload>
+  config: Config<ResponseBody, RequestBody, Payload> | null
   action: APIAction<ResponseBody, RequestBody, Payload>
 }
 
@@ -95,7 +95,7 @@ export interface FailAction<ResponseBody = unknown, RequestBody = unknown, Paylo
 export interface BeforeFailParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   request: Request
   response: Response
-  config: Config<ResponseBody, RequestBody, Payload>
+  config: Config<ResponseBody, RequestBody, Payload> | null
   store: MiddlewareAPI
 }
 
