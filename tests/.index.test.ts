@@ -85,6 +85,40 @@ describe('async actions', () => {
     )
   })
 
+  it('SHOULD return action', async (done) => {
+    const api = new APIMiddleware()
+
+    const middlewares = [api.middleware()]
+
+    const mockStore = configureMockStore(middlewares)
+
+    const store = mockStore()
+
+    jestFetchMock.mockResponseOnce(mockDataJson, headersJson)
+
+    const result = await store.dispatch(actions.get())
+
+    expect(result.type).toEqual(REDUX_API_MIDDLEWARE)
+    done()
+  })
+
+  it('SHOULD return result', async (done) => {
+    const api = new APIMiddleware()
+
+    const middlewares = [api.middleware()]
+
+    const mockStore = configureMockStore(middlewares)
+
+    const store = mockStore()
+
+    jestFetchMock.mockResponseOnce(mockDataJson, headersJson)
+
+    const result = await store.dispatch(actions.getWithResult())
+
+    expect(result.payload.action.type).toEqual(REDUX_API_MIDDLEWARE)
+    done()
+  })
+
   it('handle 403', async (done) => {
     const api = new APIMiddleware({
       headers: ({ action }) => {

@@ -3,7 +3,7 @@ import { Middleware, Dispatch, MiddlewareAPI } from 'redux'
 
 import { REDUX_API_MIDDLEWARE } from './constant'
 import { buildRequest, onStage, getResponseBody } from './helper'
-import { APIAction, Config, StageAction, StartActionParams, StageFunctionName } from './type'
+import { APIAction, Config, StageAction, StartActionParams, StageFunctionName, EndAction } from './type'
 
 class APIReduxMiddleware {
   config: Config | null
@@ -12,19 +12,23 @@ class APIReduxMiddleware {
     this.config = config || null
   }
 
-  public middleware = (): Middleware<Dispatch<APIAction>> => {
-    return (api) => (next) => async (action: APIAction): Promise<APIAction | StageAction> => {
+  public middleware = (): Middleware<Dispatch<APIAction<unknown, unknown, unknown, 'endAction'>>> => {
+    return (api) => (next) => async (action): Promise<APIAction | StageAction | EndAction> => {
       if (action.type !== REDUX_API_MIDDLEWARE) {
         return next(action)
       }
 
-      await this.request(action, api)
+      const endAction = await this.request(action, api)
 
-      return action
+      if (action.dispatchReturns === 'endAction') {
+        return endAction
+      } else {
+        return action
+      }
     }
   }
 
-  private async request(action: APIAction, store: MiddlewareAPI): Promise<void> {
+  private async request(action: APIAction, store: MiddlewareAPI): Promise<EndAction> {
     const abortController = new AbortController()
 
     const startActionParams = { action, abortController, store, config: this.config }
@@ -40,13 +44,11 @@ class APIReduxMiddleware {
 
       const endActionParams = { body, request, response, ...startActionParams }
 
-      onStage(response.ok ? StageFunctionName.onSuccess : StageFunctionName.onFail, endActionParams)
+      return onStage(response.ok ? StageFunctionName.onSuccess : StageFunctionName.onFail, endActionParams)
     } catch (error) {
       const failActionParams = { error, ...startActionParams }
 
-      onStage(StageFunctionName.onFail, failActionParams)
-
-      throw error
+      return onStage(StageFunctionName.onFail, failActionParams)
     }
   }
 

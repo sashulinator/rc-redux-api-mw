@@ -1,6 +1,6 @@
 import * as CONSTANTS from './constant'
 
-import { APIAction, OnStart, OnFail, OnSuccess } from '../src/type'
+import { APIAction, OnStart, OnFail, OnSuccess, APIActionAlt } from '../src/type'
 
 import { REDUX_API_MIDDLEWARE } from '../src/constant'
 
@@ -19,6 +19,19 @@ export const get = (stageAction?: StageFunctions<TestBody>): APIAction<TestBody>
     type: REDUX_API_MIDDLEWARE,
     stageActionTypes: CONSTANTS.GET,
     url: `/api/test/`,
+    method: 'get',
+    ...stageAction,
+  }
+}
+
+// type Test = APIAction<TestBody> & { returnResult: true }
+
+export const getWithResult = (stageAction?: StageFunctions<TestBody>): APIActionAlt<TestBody> => {
+  return {
+    type: REDUX_API_MIDDLEWARE,
+    stageActionTypes: CONSTANTS.GET,
+    url: `/api/test/`,
+    dispatchReturns: 'endAction',
     method: 'get',
     ...stageAction,
   }

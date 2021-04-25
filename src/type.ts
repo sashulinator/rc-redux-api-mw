@@ -1,4 +1,5 @@
-import { MiddlewareAPI } from 'redux'
+import { AnyAction, MiddlewareAPI } from 'redux'
+import { REDUX_API_MIDDLEWARE } from './constant'
 
 export type StageActionTypes = {
   START: string
@@ -15,13 +16,19 @@ export enum ResponseBodyType {
   readableStream = 'readableStream',
 }
 
-export interface APIAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown>
-  extends Omit<RequestInit, 'headers' | 'body'> {
+type ActionName = 'endAction' | 'APIAction'
+
+export interface APIAction<
+  ResponseBody = unknown,
+  RequestBody = unknown,
+  Payload = undefined,
+  DispatchReturns extends ActionName = 'APIAction'
+> extends Omit<RequestInit, 'headers' | 'body'> {
   url: string
-  type: string
-  returnResponse?: boolean
-  headers?: APIHeaders
+  type: typeof REDUX_API_MIDDLEWARE
+  headers?: APIHeaders<ResponseBody, RequestBody, Payload>
   body?: RequestBody
+  dispatchReturns?: DispatchReturns
   responseBodyType?: ResponseBodyType
   stageActionTypes: StageActionTypes
   onStart?: OnStart<ResponseBody, RequestBody, Payload>
@@ -30,6 +37,13 @@ export interface APIAction<ResponseBody = unknown, RequestBody = unknown, Payloa
   // put any data you want to receive in your reducer
   payload?: Payload
 }
+
+export type APIActionAlt<ResponseBody = unknown, RequestBody = unknown, Payload = undefined> = APIAction<
+  ResponseBody,
+  RequestBody,
+  Payload,
+  'endAction'
+>
 
 export interface OnStart<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   (params: StartActionParams<ResponseBody, RequestBody, Payload>): void
@@ -92,6 +106,12 @@ export interface FailAction<ResponseBody = unknown, RequestBody = unknown, Paylo
   payload: FailActionParams<ResponseBody, RequestBody, Payload>
 }
 
+export type EndAction<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> = FailAction<
+  ResponseBody,
+  RequestBody,
+  Payload
+>
+
 export interface BeforeFailParams<ResponseBody = unknown, RequestBody = unknown, Payload = unknown> {
   request: Request
   response: Response
@@ -109,7 +129,7 @@ export interface Config<ResponseBody = unknown, RequestBody = unknown, Payload =
   beforeFail?: (
     params: StartActionParams<ResponseBody, RequestBody, Payload> & { response: Response; request: Request },
   ) => Promise<Request | void> | Request | void
-  headers?: APIHeaders
+  headers?: APIHeaders<ResponseBody, RequestBody, Payload>
   onStart?: OnStart<ResponseBody, RequestBody, Payload>
   onFail?: OnFail<ResponseBody, RequestBody, Payload>
   onSuccess?: OnSuccess<ResponseBody, RequestBody, Payload>
@@ -119,4 +139,13 @@ export enum StageFunctionName {
   onSuccess = 'onSuccess',
   onFail = 'onFail',
   onStart = 'onStart',
+}
+
+declare module 'redux' {
+  export type EndActionProperty = { dispatchReturns?: 'endAction' }
+  export interface Dispatch {
+    <T extends AnyAction, ResponseBody = unknown, RequestBody = unknown, Payload = unknown>(
+      action: T,
+    ): T extends EndActionProperty ? EndAction<ResponseBody, RequestBody, Payload> : T
+  }
 }

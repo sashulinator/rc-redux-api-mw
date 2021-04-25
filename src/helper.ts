@@ -1,19 +1,23 @@
-import { APIAction, APIHeaders, FailActionParams, StartActionParams, StageFunctionName } from './type'
+import { APIAction, APIHeaders, FailActionParams, StartActionParams, StageFunctionName, EndAction } from './type'
 
 import * as APIActions from './action'
 
 export async function onStage(
   stageFunctionName: StageFunctionName,
   partialActionParams: FailActionParams,
-): Promise<void> {
+): Promise<EndAction> {
   const { config, action, store } = partialActionParams
 
   const actionParams = partialActionParams as Required<FailActionParams>
 
-  store.dispatch(APIActions[stageFunctionName](actionParams))
+  const endAction = APIActions[stageFunctionName](actionParams)
+
+  store.dispatch(endAction)
 
   Promise.resolve(actionParams).then(config?.[stageFunctionName])
   Promise.resolve(actionParams).then(action[stageFunctionName])
+
+  return endAction
 }
 
 export async function getResponseBody(action: APIAction, response: Response): Promise<unknown> {
