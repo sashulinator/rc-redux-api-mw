@@ -10,6 +10,7 @@ Simple API middleware
 ## Features
 
 - No dependencies
+- [Dispatch returns response result, not action](#dispatch-returns-a-response-result-not-an-action)
 - Neat JWT token refreshing
 - Neat error handling
 - Request aborting
@@ -18,7 +19,7 @@ Simple API middleware
 ## Usage
 
 ```js
-import { REDUX_API_MIDDLEWARE } from '@savchenko91/rc-redux-api-mw'
+import { REDUX_API_MIDDLEWARE as type } from '@savchenko91/rc-redux-api-mw'
 
 const SAVE_CAT = {
   START: 'CATS | SAVE | START',
@@ -27,13 +28,42 @@ const SAVE_CAT = {
 }
 
 const saveCat = (id, body, onSuccess) => ({
-  type: REDUX_API_MIDDLEWARE,
+  type,
   url: `/api/v1/cats/${id}`,
   method: 'post',
   stageActionTypes: SAVE_CAT,
   body,
   onSuccess,
 })
+```
+
+## Dispatch returns a response result, not an action
+
+By default "dispatch" returns an action you provide. Sometimes you need to get a response from "dispatch" from `rc-redux-api-mw`.
+
+```ts
+import { REDUX_API_MIDDLEWARE as type, APIAtionAlt } from '@savchenko91/rc-redux-api-mw'
+import * as CONSTANTS from 'path/to/token-constants'
+import store from 'path/to/store'
+
+type GetTokenBody = {
+  token: string
+}
+
+// APIAtionAlt is alternative for APIAtion, by default it returns a request result
+const getList = (): APIAtionAlt<GetTokenBody> => ({
+  type,
+  url: `/api/v1/token`,
+  stageActionTypes: CONSTANTS.GET,
+  dispatchReturns: 'endAction',
+})
+
+const refreshToken = async () => {
+  // Notice that there is no "store.dispatch(getList()) as APIAtionAlt<GetTokenBody>"
+  // because providing "dispatchReturns: 'endAction'" you let redux know what "dispatch" returns
+  const result = await store.dispatch(getList())
+  localStorage.setItem('token', result.body.token)
+}
 ```
 
 ### Connect
